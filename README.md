@@ -7,5 +7,5 @@
 - API Instructions
     1. Navigate here: https://develop.purpleair.com/keys
     2. Log in with a Google account
-    3. Create key(s)
+    3. Create a READ key and a WRITE key
 - Documentation: https://community.purpleair.com/t/making-api-calls-with-the-purpleair-api/180
