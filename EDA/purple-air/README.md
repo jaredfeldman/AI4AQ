@@ -1,5 +1,5 @@
 # PurpleAir
-## Files:
+## Files
 - `purple-air-api-tutorial.ipynb`
     - Attempt at tutorial [here](https://community.purpleair.com/t/making-api-calls-with-the-purpleair-api/180), but attempt to add sensors to group hung for several minutes and never processed
 - `purple-air-latlongpull.ipynb`
