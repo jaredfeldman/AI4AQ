@@ -2,11 +2,16 @@
 
 ## Datasets
 ### PurpleAir
-### Notebooks:
+#### Files:
 - `purple-air-api-tutorial.ipynb`
     - Attempt at tutorial [here](https://community.purpleair.com/t/making-api-calls-with-the-purpleair-api/180), but attempt to add sensors to group hung for several minutes and never processed
 - `purple-air-eda.ipynb`
     - When failures reaches above, attempt at pulling SLC sensors without a group, using long/lat from code [here](https://community.purpleair.com/t/aqi-location-bound-list-of-sensors-limited/3343)
+    - Below is the area around SLC used for lat/long, indicated by the box
+![slc_lat_long_box](slc_lat_long_box.png)
+- `sample_sensor_data_114443.txt`
+    - Example output from all fields for one sensor
+    - More information on fields can be found [here](https://api.purpleair.com/#api-sensors-get-sensors-data)
 #### Notes
 - API calls cost points. Each newly created Organization starts out with 1,000,000 points, which must be assigned to individual projects.
     - Costs:
@@ -21,3 +26,7 @@
 #### Maximizing Points for AI4AQ
 - TO DO: Create documentation for streamlined API call to minimize points used for one person to pull data we need
 #### EDA Findings
+- Using the lat/long in `purple-air-eda.ipynb`, in the surrounding SLC area, there are:
+    - 159 indoor sensors
+    - 457 outdoor sensors
+- Using code from `purple-air-eda.ipynb` (modified to include the fields that we want), we can pull data for all 616 sensors in SLC-area
