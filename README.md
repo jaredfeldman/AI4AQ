@@ -27,9 +27,13 @@
     - Main: https://aqs.epa.gov/aqsweb/documents/data_api.html
 
 ### AirNow
-- **Description**: 
+- **Description**: The U.S. EPA AirNow program (www.AirNow.gov) protects public health by providing forecast and real-time observed air quality information across the United States, Canada, and Mexico. AirNow receives real-time air quality observations from over 2,000 monitoring stations and collects forecasts for more than 300 cities. 
 - **Source**: API
 - **API Instructions**:
-    1. 
+    1. Navigate here: https://docs.airnowapi.org/login
+    2. Click "Request an AirNow API Account"
+    3. Enter the required information
+    4. An email will be sent to you from `dms@airnowtech.org`
+    5. Click the activation link in the email
 **Documentation**:
-    - Main: 
+    - Main: https://docs.airnowapi.org/
