@@ -36,8 +36,8 @@
     - Pricing
         - Base is $1 = 100,000 points, but more points can be acquired per $1 based on the purchase amount (e.g., if you purchase $100 worth of points, $1 = 150,000 points)
 - To query multiple sensors at once, we can create groups and assign it a name. Groups are given unique IDs and assigned to the API keys that they are created with. However, each sensor would need to be added individually and then queried. Instead, using lat/long does the trick without extra steps.
-## Maximizing Points for AI4AQ
-- TO DO: Create documentation for streamlined API call to minimize points used for one person to pull data we need
+## TO DO
+- Create documentation for streamlined API call to minimize points used for one person to pull data we need
 ## EDA Findings
 - Using the lat/long in `purple-air-eda.ipynb`, in the surrounding SLC area, there are:
     - 159 indoor sensors

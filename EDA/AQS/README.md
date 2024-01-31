@@ -19,6 +19,22 @@
 - **Parameters**
     - The `param` parameter in the API call can take up to 5 parameters. This is where we identify pollutants, PM, etc.
     - There are A LOT - full list: https://aqs.epa.gov/aqsweb/documents/codetables/methods_all.html
-    - Some
+    - S
+
+## TO DO
+- Determine parameters that we'll need to pass into `param`
 
 ## EDA Findings
+- Of the 11 counties around the great salt lake, only 7 have 2023 data for param 88101
+    1. Salt Lake
+    2. Utah
+    3. Cache
+    4. Davis
+    5. Wber
+    6. Tooele
+    7. Box Elder
+- There are only 14 unique `site_number`s
+- Each observation is taken every hour, on the hour
+- `qualifier`
+    - some data may be unusable from this column - may need to filter here
+- Across these 7 sites, there are 153,834 total observations
