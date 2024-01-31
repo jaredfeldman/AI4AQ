@@ -1,6 +1,7 @@
 # AI4AQ
 
 ## Datasets
+
 ### PurpleAir
 - **Description**: The vast PurpleAir low-cost sensor network (www.purpleair.com/, PurpleAir 2021) provides an opportunity to evaluate the influence of smoke on indoor air quality over a significantly larger set of indoor environments than many previous studies. The network provides real-time measurements of indoor or outdoor PM2.5 concentrations from over 20 000 monitors across the globe.
 - **Source**: API
@@ -11,3 +12,24 @@
 - **Documentation**:
     - Main: https://api.purpleair.com/#api-welcome
     - Tutorial: https://community.purpleair.com/t/making-api-calls-with-the-purpleair-api/180
+
+### Air Quality Systems (AQS)
+- **Description**: AQS is an EPA dataset that contains ambient air sample data collected by state, local, tribal, and federal air pollution control agencies from thousands of monitors around the nation. It also contains meteorological data, descriptive information about each monitoring station (including its geographic location and its operator), and information about the quality of the samples. 
+    - NOTE:AQS does not contain real-time air quality data (it can take 6 months or more from the time data is collected until it is in AQS).
+- **Source**: API
+- **API Instructions**:
+    1. Use requires an account using your email
+    2. Choose an email
+    3. Navigate to https://aqs.epa.gov/data/api/signup?email=myemail@example.com, replacing `myemail@example.com` with the email you want to use
+    4. An email will be sent to you from `aqsdatamart@epa.gov` containing a password
+    5. Store your email and password somewhere accessible, both are required for any API call
+**Documentation**:
+    - Main: https://aqs.epa.gov/aqsweb/documents/data_api.html
+
+### AirNow
+- **Description**: 
+- **Source**: API
+- **API Instructions**:
+    1. 
+**Documentation**:
+    - Main: 
