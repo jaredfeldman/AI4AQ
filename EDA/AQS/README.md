@@ -19,7 +19,6 @@
 - **Parameters**
     - The `param` parameter in the API call can take up to 5 parameters. This is where we identify pollutants, PM, etc.
     - There are A LOT - full list: https://aqs.epa.gov/aqsweb/documents/codetables/methods_all.html
-    - S
 
 ## TO DO
 - Determine parameters that we'll need to pass into `param`
@@ -30,7 +29,7 @@
     2. Utah
     3. Cache
     4. Davis
-    5. Wber
+    5. Weber
     6. Tooele
     7. Box Elder
 - There are only 14 unique `site_number`s

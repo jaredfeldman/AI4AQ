@@ -23,8 +23,10 @@
     3. Navigate to https://aqs.epa.gov/data/api/signup?email=myemail@example.com, replacing `myemail@example.com` with the email you want to use
     4. An email will be sent to you from `aqsdatamart@epa.gov` containing a password
     5. Store your email and password somewhere accessible, both are required for any API call
-**Documentation**:
+- **Documentation**:
     - Main: https://aqs.epa.gov/aqsweb/documents/data_api.html
+- **Sensor Map**:
+    - https://epa.maps.arcgis.com/apps/webappviewer/index.html?id=5f239fd3e72f424f98ef3d5def547eb5&extent=-146.2334,13.1913,-46.3896,56.5319
 
 ### AirNow
 - **Description**: The U.S. EPA AirNow program (www.AirNow.gov) protects public health by providing forecast and real-time observed air quality information across the United States, Canada, and Mexico. AirNow receives real-time air quality observations from over 2,000 monitoring stations and collects forecasts for more than 300 cities. 
@@ -35,5 +37,7 @@
     3. Enter the required information
     4. An email will be sent to you from `dms@airnowtech.org`
     5. Click the activation link in the email
-**Documentation**:
+- **Documentation**:
     - Main: https://docs.airnowapi.org/
+- **Sensor Map**:
+    - https://gispub.epa.gov/airnow/?xmin=-12728717.018466992&xmax=-12141680.641237123&ymin=4886198.147804826&ymax=5133242.623222397&monitors=pm10
