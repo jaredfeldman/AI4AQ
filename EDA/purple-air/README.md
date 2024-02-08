@@ -72,3 +72,6 @@
     - `stats` column is a dictionary of different pm2.5 datapoints, such as 10-minute average and 24-hour average, for each sensor, across channel A (`stats_a`) and channel B (`stats_b`).
         - Only pm2.5, but may be worth extracting into own columns?
     - There are different `confidence` scores - not sure what they means, however, over half (~370) tend to have a value of 100
+    - Weather-related fields may need adjustment https://api.purpleair.com/#api-sensors-get-sensor-history):
+        - `humidity` 4% lower than ambient conditions
+        - `temperature` 8F higher than ambient conditions
