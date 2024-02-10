@@ -32,7 +32,8 @@
     5. Weber
     6. Tooele
     7. Box Elder
-- There are only 14 unique `site_number`s
+- There are 14 unique `site_number`s for PM2.5
+- There are 5 unique `site_number`s for PM10.0 (all overlap with PM2.5 site_numbers)
 - Each observation is taken every hour, on the hour
 - `qualifier`
     - some data may be unusable from this column - may need to filter here

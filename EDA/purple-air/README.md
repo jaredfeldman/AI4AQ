@@ -75,3 +75,5 @@
     - Weather-related fields may need adjustment https://api.purpleair.com/#api-sensors-get-sensor-history):
         - `humidity` 4% lower than ambient conditions
         - `temperature` 8F higher than ambient conditions
+    - `ozone1`, the measure for ozone in the dataset, is NaN except for one outdoor sensor
+        - may not be able to rely on PurpleAir for ozone data
