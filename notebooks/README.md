@@ -2,7 +2,7 @@
 
 ## Datasets
 
-### PurpleAir
+### [PurpleAir](https://github.com/jaredfeldman/AI4AQ/tree/main/EDA/purple-air)
 - **Description**: The vast PurpleAir low-cost sensor network (www.purpleair.com/, PurpleAir 2021) provides an opportunity to evaluate the influence of smoke on indoor air quality over a significantly larger set of indoor environments than many previous studies. The network provides real-time measurements of indoor or outdoor PM2.5 concentrations from over 20 000 monitors across the globe.
 - **Source**: API
 - **API Instructions**
@@ -13,7 +13,7 @@
     - Main: https://api.purpleair.com/#api-welcome
     - Tutorial: https://community.purpleair.com/t/making-api-calls-with-the-purpleair-api/180
 
-### Air Quality Systems (AQS)
+### [Air Quality Systems (AQS)](https://github.com/jaredfeldman/AI4AQ/tree/main/EDA/AQS)
 - **Description**: AQS is an EPA dataset that contains ambient air sample data collected by state, local, tribal, and federal air pollution control agencies from thousands of monitors around the nation. It also contains meteorological data, descriptive information about each monitoring station (including its geographic location and its operator), and information about the quality of the samples. 
     - NOTE:AQS does not contain real-time air quality data (it can take 6 months or more from the time data is collected until it is in AQS).
 - **Source**: API
@@ -28,7 +28,7 @@
 - **Sensor Map**:
     - https://epa.maps.arcgis.com/apps/webappviewer/index.html?id=5f239fd3e72f424f98ef3d5def547eb5&extent=-146.2334,13.1913,-46.3896,56.5319
 
-### AirNow
+### [AirNow](https://github.com/jaredfeldman/AI4AQ/tree/main/EDA/AirNow)
 - **Description**: The U.S. EPA AirNow program (www.AirNow.gov) protects public health by providing forecast and real-time observed air quality information across the United States, Canada, and Mexico. AirNow receives real-time air quality observations from over 2,000 monitoring stations and collects forecasts for more than 300 cities. 
 - **Source**: API
 - **API Instructions**:
