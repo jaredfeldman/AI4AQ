@@ -1,0 +1,147 @@
+---
+title: "purpleaireda"
+output:
+  pdf_document: default
+  html_document: default
+date: "2024-02-19"
+---
+
+The following compares indoor and outdoor metrics between paired sensors. Data is a snapshot of all sensors in SLC area on January 30, 2024.
+
+Paired sensors were determined using haversine distance for each indoor sensor's latitude and longitude to find the closest outdoor sensor. After filtering down to sensors with `position_rating` >= 3, there were 137 unique indoor sensors. Each indoor sensor was paired with its closest outdoor counterpart, resulting in 97 unique outdoor sensors (some overlap).
+
+```{r package load, message=FALSE, echo=FALSE}
+library(lmtest)
+library(ggplot2)
+library(data.table)
+library(tidyverse)
+library(stargazer)
+```
+
+
+```{r, echo=FALSE}
+pa_eda <- read.csv("./slc_sensor_data_20240130.csv")
+pa_eda <- data.table(pa_eda)
+```
+
+```{r, echo=FALSE}
+paired_data <- read.csv("./indoor_outdoor_matched.csv")
+```
+
+
+```{r, echo=FALSE}
+# Create scatterplot for pm1.0
+ggplot(paired_data, aes(x = outdoor_pm1.0, y = indoor_pm1.0)) +
+  geom_point() +
+  labs(x = "Outdoor PM1.0", y = "Indoor PM1.0") +
+  ggtitle("Scatterplot of Indoor PM1.0 vs Outdoor PM1.0")
+
+# Create scatterplot for pm2.5
+ggplot(paired_data, aes(x = outdoor_pm2.5, y = indoor_pm2.5)) +
+  geom_point() +
+  labs(x = "Outdoor PM2.5", y = "Indoor PM2.5") +
+  ggtitle("Scatterplot of Indoor PM2.5 vs Outdoor PM2.5")
+
+# Create scatterplot for pm10.0
+ggplot(paired_data, aes(x = outdoor_pm10.0, y = indoor_pm10.0)) +
+  geom_point() +
+  labs(x = "Outdoor PM10.0", y = "Indoor PM10.0") +
+  ggtitle("Scatterplot of Indoor PM10.0 vs Outdoor PM10.0")
+
+# Create scatterplot for scattering_coefficient
+ggplot(paired_data, aes(x = outdoor_scattering_coefficient, y = indoor_scattering_coefficient)) +
+  geom_point() +
+  labs(x = "Outdoor scattering_coefficient", y = "Indoor scattering_coefficient") +
+  ggtitle("Scatterplot of Indoor scattering_coefficient vs Outdoor scattering_coefficient")
+
+# Create scatterplot for deciviews
+ggplot(paired_data, aes(x = outdoor_deciviews, y = indoor_deciviews)) +
+  geom_point() +
+  labs(x = "Outdoor deciviews", y = "Indoor deciviews") +
+  ggtitle("Scatterplot of Indoor deciviews vs Outdoor deciviews")
+
+# Create scatterplot for visual_range
+ggplot(paired_data, aes(x = outdoor_visual_range, y = indoor_visual_range)) +
+  geom_point() +
+  labs(x = "Outdoor visual_range", y = "Indoor visual_range") +
+  ggtitle("Scatterplot of Indoor visual_range vs Outdoor visual_range")
+
+# Create scatterplot for pressure
+ggplot(paired_data, aes(x = outdoor_pressure, y = indoor_pressure)) +
+  geom_point() +
+  labs(x = "Outdoor pressure", y = "Indoor pressure") +
+  ggtitle("Scatterplot of Indoor pressure vs Outdoor pressure")
+
+# Create scatterplot for temperature
+ggplot(paired_data, aes(x = outdoor_temperature, y = indoor_temperature)) +
+  geom_point() +
+  labs(x = "Outdoor temperature", y = "Indoor temperature") +
+  ggtitle("Scatterplot of Indoor temperature vs Outdoor temperature")
+
+# Create scatterplot for altitude
+ggplot(paired_data, aes(x = outdoor_altitude, y = indoor_altitude)) +
+  geom_point() +
+  labs(x = "Outdoor altitude", y = "Indoor altitude") +
+  ggtitle("Scatterplot of Indoor altitude vs Outdoor altitude")
+
+# Create scatterplot for humidity
+ggplot(paired_data, aes(x = outdoor_humidity, y = indoor_humidity)) +
+  geom_point() +
+  labs(x = "Outdoor humidity", y = "Indoor humidity") +
+  ggtitle("Scatterplot of Indoor humidity vs Outdoor humidity")
+
+```
+
+```{r, echo=FALSE}
+# Run a regression for pm1.0
+pm1_lm_model <- lm(indoor_pm1.0 ~ outdoor_pm1.0, data = paired_data)
+
+# Run a regression for pm2.5
+pm2_5_lm_model <- lm(indoor_pm2.5 ~ outdoor_pm2.5, data = paired_data)
+
+# Run a regression for pm10.0
+pm10_lm_model <- lm(indoor_pm10.0 ~ outdoor_pm10.0, data = paired_data)
+
+# Run a regression for scattering_coefficient
+scattering_coefficient_lm_model <- lm(indoor_scattering_coefficient ~ outdoor_scattering_coefficient, data = paired_data)
+
+# Run a regression for deciviews
+deciviews_lm_model <- lm(indoor_deciviews ~ outdoor_deciviews, data = paired_data)
+
+# Run a regression for visual_range
+visual_range_lm_model <- lm(indoor_visual_range ~ outdoor_visual_range, data = paired_data)
+
+# Run a regression for pressure
+pressure_lm_model <- lm(indoor_pressure ~ outdoor_pressure, data = paired_data)
+
+# Run a regression for temperature
+temperature_lm_model <- lm(indoor_temperature ~ outdoor_temperature, data = paired_data)
+
+# Run a regression for humidity
+humidity_lm_model <- lm(indoor_humidity ~ outdoor_humidity, data = paired_data)
+
+```
+
+```{r, results='asis', echo=FALSE, warning=FALSE, message=FALSE}
+stargazer(pm1_lm_model,
+          pm2_5_lm_model,
+          pm10_lm_model,
+          title = 'Particulate Matter Variables',
+          type = 'latex')
+```
+
+```{r, results='asis',  echo=FALSE, warning=FALSE, message=FALSE}
+stargazer(scattering_coefficient_lm_model,
+          deciviews_lm_model,
+          visual_range_lm_model,
+          title = 'Visibility-related Variables',
+          type = 'latex')
+```
+
+```{r, results='asis',  echo=FALSE, warning=FALSE, message=FALSE}
+stargazer(pressure_lm_model,
+          temperature_lm_model,
+          humidity_lm_model,
+          title = 'Weather-related Variables',
+          type = 'latex')
+```
