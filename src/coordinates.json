@@ -1,9 +1,9 @@
 {
     "map_box":{
         "map_NWlat":41.66,
-        "map_NWlong":-113.42,
+        "map_NWlng":-113.42,
         "map_SElat":40.31,
-        "map_SElong":-110.58
+        "map_SElng":-110.58
     },
     "sensor_box":{
         "sensor_NWlat":41.325,
