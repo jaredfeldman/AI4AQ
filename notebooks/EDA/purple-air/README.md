@@ -14,6 +14,7 @@
     - Contains all data for all (indoor and outdoor) SLC sensors
     - Created using API
     - USE THIS to pull data for exploration to avoid using API and accruing costs
+    - NOTE: As of 20240227, this does not reflect the map area above
 - `sample_sensor_data_114443.txt`
     - Example output from all fields for one sensor for exploration
     - More information on fields can be found [here](https://api.purpleair.com/#api-sensors-get-sensors-data)
