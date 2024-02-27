@@ -1,0 +1,14 @@
+{
+    "map_box":{
+        "map_NWlat":41.66,
+        "map_NWlong":-113.42,
+        "map_SElat":40.31,
+        "map_SElong":-110.58
+    },
+    "sensor_box":{
+        "sensor_NWlat":41.325,
+        "sensor_NWlng":-112.130,
+        "sensor_SElat":40.548,
+        "sensor_SElng":-111.806
+    }
+}
