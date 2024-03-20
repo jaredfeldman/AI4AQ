@@ -1,5 +1,4 @@
 #FLASK APP FOR AI4AQ
-# I modified this from my previous project and commented out the code for reference
 
 from flask import (
     Flask,
@@ -8,10 +7,11 @@ from flask import (
     request)
 import pandas as pd
 import sqlite3
+import traceback
 
 ## import functions
 #from get_latest_sensor_test import return_table
-import utils.get_latest_sensor_test as test_py
+import utils.get_summary_sensor as summary_s
 
 app=Flask(__name__)
 
@@ -20,18 +20,33 @@ app=Flask(__name__)
 @app.route("/")
 def home():
     return render_template("index.html")
+    
+@app.route("/api/test")
+def test():
+    return 'test'
 
 
-# Gets latest sensor plots to point - this is just a test
-@app.route("/api/latest_test", methods=["GET"])
+# Gets Average or Latest sensor plots to point
+@app.route("/api/summary_sensor", methods=["GET"])
 def get_latest():
     try:
-        return test_py.return_table().to_json(orient='records')
+        # Retrieve query parameters
+        begin_date = request.args.get('begin_date')
+        end_date = request.args.get('end_date')
+
+        # Pass the dates to function
+        return summary_s.return_table(begin_date, end_date).to_json(orient='records')
     except Exception as e:
         traceback_str = ''.join(traceback.format_exception(etype=type(e), value=e, tb=e.__traceback__))
         app.logger.error(f"Error: {traceback_str}")
         return jsonify({"error": "Internal Server Error"}), 500
+    
+# Gets all dates and orders them for the date selection tool
+@app.route("/api/date_range", methods=["GET"])
+def get_date_range():
 
+    # Pass the dates to function
+    return pd.read_csv('static/data/date_range.csv').to_json(orient='records')
 
 
 if __name__=="__main__":

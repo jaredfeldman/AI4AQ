@@ -1,0 +1,117 @@
+/* style.css */
+
+/* Reset margin and padding for all elements */
+* {
+    margin: 0;
+    padding: 0;
+}
+
+
+body {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    margin: 0px;
+}
+
+header {
+    background: #333;
+    color: purple;
+    padding-top: 30px;
+    min-height: 70px;
+    position: fixed; /* Fix header at the top */
+    width: 100%; /* Ensure it spans the full width */
+    top: 0; /* Position at the very top */
+    z-index: 1030; /* Ensure it stays above other content */
+}
+
+header a {
+    color: #fff;
+    text-decoration: none;
+    text-transform: uppercase;
+    font-size: 16px;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    margin-bottom: 20
+}
+
+
+.main-content {
+    display: flex;
+    flex-direction: row;
+    height: 100vh; /* Adjust height based on header's height */
+    padding-top: 289px;
+}
+
+.map-container {
+    position: relative; /* Establishes positioning context */
+    width: 100%; /* Takes full width */
+    height: 100%; /* Adjusts for header height */
+}
+
+#mapid {
+    width: 100%;
+    height: 100%; /* Fills the container */
+}
+
+
+.btn-group {
+    position: absolute;
+    top: 50px;
+    left: 20px; /* Position next to sidebar or adjust as needed */
+    z-index: 1000;
+}
+
+.button-group-colors {
+    position: absolute;
+    top: 0px;
+    left: 5px;
+    width: 100px;
+    z-index: 1000;
+}
+
+
+.leaflet-control-container { position: absolute; right: 56px }
+
+.number-icon {
+    margin-top: -7px; /* Adjust based on the size of circle */
+    margin-left: -2px; /* Center the text horizontally */
+    font-size: 16px;
+    line-height: 1; /* Ensures the text is vertically centered */
+}
+
+#slider-button-container {
+    position: absolute;
+    top: 500px;
+    left: 50px;
+    display: flex;
+    width: 60%;
+    align-items: center; /* This ensure vertical alignment */
+    z-index: 1000; /* Ensure it's above the map */
+}
+
+#date-slider {
+    flex-grow: 1; /* Slider takes up as much space as possible */
+    margin-right: 20px; /* Spacing between slider and button */
+}
+
+#updateSensorsButton {
+    
+}
+
+
+#overlay-box {
+    position: absolute;
+    top: 15px;
+    left: 300px;
+    background-color: rgba(255, 255, 255, 0.8); /* Semi-transparent white */
+    padding: 20px;
+    border-radius: 5px;
+    width: 500px;
+    height: 50px;
+    z-index: 1000; /* Ensure it appears above the map */
+}
+
+
+
+
