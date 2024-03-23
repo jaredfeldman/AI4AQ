@@ -54,6 +54,20 @@ h1, h2, h3, h4, h5, h6 {
     height: 100%; /* Fills the container */
 }
 
+#my_dataviz {
+    position: fixed;
+    right: 20px; /* Right side of the screen */
+    bottom: 130px; /* Up from the bottom */
+    width: 300px;
+    height: 300px;
+    background-color: rgba(255, 255, 255, 0.8); 
+    padding: 10px;
+    border-radius: 5px; /* Optional: Rounded corners for the box */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    z-index: 1000; /* Ensure it appears above the map */
+}
+
+
 
 .btn-group {
     position: absolute;
@@ -81,11 +95,11 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 #slider-button-container {
-    position: absolute;
-    top: 500px;
-    left: 50px;
+    position: fixed;
+    bottom: 20px;
+    left: 60px;
     display: flex;
-    width: 60%;
+    width: 70%;
     align-items: center; /* This ensure vertical alignment */
     z-index: 1000; /* Ensure it's above the map */
 }
@@ -97,6 +111,16 @@ h1, h2, h3, h4, h5, h6 {
 
 #updateSensorsButton {
     
+}
+
+#colored-bar {
+    position: fixed;
+    bottom: 0; /* Aligns to the bottom of the viewport */
+    left: 0;
+    width: 100%; /* Full width of the viewport */
+    height: 80px; /* Height of the bar */
+    background-color: #333; /* Color of the bar */
+    z-index: 999;
 }
 
 
@@ -111,6 +135,57 @@ h1, h2, h3, h4, h5, h6 {
     height: 50px;
     z-index: 1000; /* Ensure it appears above the map */
 }
+
+#info {
+    padding: 6px;
+    background: rgba(255, 255, 255, 0.6);
+    position: fixed;
+    border-radius: 5px;
+    top: 400px;
+    left: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    z-index:1000;
+}
+
+/* Sidebar CSS - Adjust to slide from the left */
+#sidebar {
+    width: 250px; /* Adjust the width as necessary */
+    height: 100%; /* Full height */
+    position: fixed;
+    top: 0; /* Align to the top */
+    left: -250px; /* Initially hide the sidebar off-screen to the left */
+    background-color: rgba(255, 200, 255, 0.8);
+    z-index: 1050;
+    transition: left 0.5s; /* Smooth transition for sliding effect */
+}
+
+/* Class to slide in the sidebar */
+#sidebar.active {
+    left: 0; /* Slide into view */
+}
+
+/* Adjust the main container padding to make space for the sidebar */
+.container-fluid {
+    padding-top: 0px; /* Adjust based on the sidebar's height */
+    transition: all 0.4s;
+}
+
+.custom-icon {
+    position: relative;
+    text-align: center;
+    width: 46.2px; /* Match the width of your marker */
+}
+
+.sensor-value {
+    position: absolute;
+    width: 100%;
+    left: 0px;
+    bottom: 17px; /* Adjust position to fit over marker image */
+    font-size: 19px; 
+    color: white;
+    font-weight: bold;
+}
+
 
 
 

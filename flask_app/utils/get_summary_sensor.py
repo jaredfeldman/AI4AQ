@@ -14,8 +14,26 @@ def return_table(begin_date, end_date):
     GROUP BY sensor_id, latitude, longitude, altitude
     """
     
-    # Execute the query with parameter substitution to prevent SQL injection
+    # Execute the query
     df = pd.read_sql_query(sql_query, connection, params=(begin_date, end_date))
+    
+    # Join with color categories
+    df_color = pd.read_csv('static/data/sensor_categories.csv')
+    df = pd.merge(df,df_color, on = 'sensor_id')
+    
+    # Get category averages
+    averages = df.groupby('category').mean().reset_index()
+    averages = averages[['category','avg_pm2','avg_pm10']]
+    averages.rename(columns = {'avg_pm2':'cat_avg_pm2','avg_pm10':'cat_avg_pm10'}, inplace = True)
+    averages['cat_avg_pm2'] = round(averages['cat_avg_pm2']).astype('int')
+    averages['cat_avg_pm10'] = round(averages['cat_avg_pm10']).astype('int')
+    
+    # Join
+    
+    df['avg_pm2'] = round(df['avg_pm2']).astype('int')
+    df['avg_pm10'] = round(df['avg_pm10']).astype('int')
+
+    df = pd.merge(df,averages, on = 'category')
     
     connection.close()
     return df
