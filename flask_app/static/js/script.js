@@ -70,6 +70,7 @@ function updateSensors(startDate, endDate, map) {
             addSensorMarkers(data_sensor, map);
             // get data for bar graph
             calculateBarGraph(data_sensor)
+            document.getElementById('sensorTitle').innerHTML = 'Main Sensor Title Temporary Text !!';
         })
         .catch(error => console.error('Error fetching sensor data:', error));
 }

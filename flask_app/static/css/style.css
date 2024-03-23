@@ -24,7 +24,7 @@ header {
     z-index: 1030; /* Ensure it stays above other content */
 }
 
-header a {
+.nav-link {
     color: #fff;
     text-decoration: none;
     text-transform: uppercase;
@@ -71,15 +71,15 @@ h1, h2, h3, h4, h5, h6 {
 
 .btn-group {
     position: absolute;
-    top: 50px;
-    left: 20px; /* Position next to sidebar or adjust as needed */
+    top: 70px;
+    right: 80px; /* Position next to sidebar or adjust as needed */
     z-index: 1000;
 }
 
 .button-group-colors {
     position: absolute;
     top: 0px;
-    left: 5px;
+    right: 175px;
     width: 100px;
     z-index: 1000;
 }
@@ -99,7 +99,7 @@ h1, h2, h3, h4, h5, h6 {
     bottom: 20px;
     left: 60px;
     display: flex;
-    width: 70%;
+    width: 90%;
     align-items: center; /* This ensure vertical alignment */
     z-index: 1000; /* Ensure it's above the map */
 }
@@ -139,7 +139,6 @@ h1, h2, h3, h4, h5, h6 {
 #info {
     padding: 6px;
     background: rgba(255, 255, 255, 0.6);
-    position: fixed;
     border-radius: 5px;
     top: 400px;
     left: 10px;
@@ -187,6 +186,13 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 
-
+#toggle {
+    position: fixed;
+    top: 20px;
+    right: 60px;
+    display: flex;
+    width: 100px;
+    z-index: 1000; /* Ensure it's above the map */
+}
 
 
