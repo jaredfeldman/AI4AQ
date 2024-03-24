@@ -206,20 +206,13 @@ h1, h2, h3, h4, h5, h6 {
 /*    left: 10px;*/
 /*    display: flex;*/
 /*    width: 110px;*/
-/*    z-index: 1000; /* Ensure it's above the map */*/
+/*    z-index: 1000; /* Ensure it's above the map *//*/
 /*}*/
 
-/* Define styles for active and inactive states */
-.color-button {
-    transition: all 0.3s ease; /* Smooth transition for style changes */
-}
+#toggleRed.active { background-color: red; color: white; }
+#toggleOrange.active { background-color: orange; color: white; }
+#toggleGreen.active { background-color: green; color: white; }
+#toggleLightBlue.active { background-color: #33ccff; color: white; }
 
-.color-button.active {
-    box-shadow: 0 0 10px #000; /* Shadow for active state */
-    transform: scale(1.05); /* Scale up for active state */
-}
 
-.color-button.inactive {
-    opacity: 0.5; /* Semi-transparent for inactive state */
-}
 

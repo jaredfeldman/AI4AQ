@@ -1,8 +1,16 @@
 // global variables for storing selected start and end dates and all current markers
-var startDate;
-var endDate;
+var startDate = "2020-01-01"; // default start date
+var endDate = "2020-12-31"; // default end date
 var allMarkers = [];
 let showColors = true;
+
+// store markers by color
+var markersByColor = {
+    red: [],
+    orange: [],
+    green: [],
+    lightBlue: []
+};
 
 let colorStates = {
     red: true,
@@ -14,15 +22,19 @@ let colorStates = {
 var geojsonLayer;
 var centroidData;
 
-
+var map; // Declare `map` globally
+var dateSlider;
 
 document.addEventListener('DOMContentLoaded', function() {
-    var map = initializeMap();
+    map = initializeMap();
     loadCentroidData(() => {
-        loadGeoJSONLayer(map); // Adjust this function to include event listeners setup
-        // Any other setup that depends on centroidData
+        loadGeoJSONLayer(map);
     });
     fetchDateRangeAndInitializeSlider(map);
+    updateButtonStyle('red');
+    updateButtonStyle('orange');
+    updateButtonStyle('green');
+     updateButtonStyle('lightBlue');
 });
 
 
@@ -48,9 +60,10 @@ function fetchDateRangeAndInitializeSlider(map) {
 }
 
 function initializeDateSlider(dateArray, map) {
-    var dateSlider = document.getElementById('date-slider');
+    // Initialize the dateSlider inside this function but use the global variable
+    dateSlider = document.getElementById('date-slider');
     noUiSlider.create(dateSlider, {
-        range: {'min': 0, 'max': dateArray.length - 1},
+        range: { 'min': 0, 'max': dateArray.length - 1 },
         start: [0, dateArray.length - 1],
         connect: true,
         step: 1,
@@ -60,34 +73,40 @@ function initializeDateSlider(dateArray, map) {
             from: value => value
         }
     });
-
-    document.getElementById('updateSensorsButton').addEventListener('click', () => {
-        let values = dateSlider.noUiSlider.get();
-        let startDate = values[0];
-        let endDate = values[1];
-        updateSensors(startDate, endDate, map);
-    });
 }
 
 function updateSensors(startDate, endDate, map) {
     clearMarkers();
     console.log("Formatted Dates:", startDate, endDate);
-    // Construct the URL with individual parameters for each color state
     const url = `/api/summary_sensor?begin_date=${startDate}&end_date=${endDate}&red=${colorStates.red}&orange=${colorStates.orange}&green=${colorStates.green}&lightBlue=${colorStates.lightBlue}`;
-    
+
     fetch(url)
-    .then(response => response.json())
-    .then(data_sensor => {
-        addSensorMarkers(data_sensor, map);
-        calculateBarGraph(data_sensor);
-        document.getElementById('sensorTitle').innerHTML = `<h2>${startDate} to ${endDate}</h2>`;
-    })
-    .catch(error => console.error('Error fetching sensor data:', error));
+        .then(response => response.json())
+        .then(data_sensor => {
+            addSensorMarkers(data_sensor, map);
+            calculateBarGraph(data_sensor);
+            document.getElementById('sensorTitle').innerHTML = `<h2>${startDate} to ${endDate}</h2>`;
+        })
+        .catch(error => console.error('Error fetching sensor data:', error));
 }
+
 
 
 function addSensorMarkers(data_sensor, map) {
     data_sensor.forEach(sensor => {
+        var color; // Determine color for sensor base
+
+        // Assign color based on criteria
+        if (sensor.category === 'red') {
+            color = 'red';
+        } else if (sensor.category === 'green') {
+            color = 'green';
+        } else if (sensor.category === 'orange') {
+            color = 'orange';
+        } else if (sensor.category === 'blue') {
+            color = 'lightBlue';
+        }
+
         // Construct the HTML for the marker
         var htmlContent = `<div class='custom-icon'>` +
                           `<img src="static/js/pin.png" style="width:46.2.5px; height:53.2px;">` +
@@ -103,19 +122,30 @@ function addSensorMarkers(data_sensor, map) {
             popupAnchor: [0, -38] // Adjust to position the popup
         });
 
-        // Create the marker with the custom icon
-        var marker = L.marker([sensor.latitude, sensor.longitude], {icon: customIcon}).addTo(map);
+        // Create the marker with the custom icon and add to map
+        var marker = L.marker([sensor.latitude, sensor.longitude], {icon: customIcon});
         marker.bindPopup(`<b>Sensor ID:</b> ${sensor.sensor_id}<br><b>PM2.5 Value:</b> ${Math.round(sensor.avg_pm2)}`);
-
-        allMarkers.push(marker);
+        if (color) {
+            markersByColor[color].push(marker); // Add marker to appropriate color category
+            if (colorStates[color]) { // Check if markers for this color should be displayed
+                marker.addTo(map);
+            }
+        }
     });
 }
 
 
 
+
 function clearMarkers() {
+    // Clear markers from each category
+    Object.values(markersByColor).forEach(markersArray => {
+        markersArray.forEach(marker => marker.remove());
+        markersArray.length = 0; // Clear the array
+    });
+    // Optionally clear the allMarkers array if it's still in use for other purposes
     allMarkers.forEach(marker => marker.remove());
-    allMarkers = [];
+    allMarkers.length = 0;
 }
 
 
@@ -387,35 +417,82 @@ function updateMapColors() {
     }
 }
 
-document.getElementById('toggleRed').addEventListener('click', function() {
-    toggleColor('red');
-});
-document.getElementById('toggleOrange').addEventListener('click', function() {
-    toggleColor('orange');
-});
-document.getElementById('toggleGreen').addEventListener('click', function() {
-    toggleColor('green');
-});
-document.getElementById('toggleLightBlue').addEventListener('click', function() {
-    toggleColor('lightBlue');
-});
 
 function updateButtonStyle(color) {
     const buttonId = `toggle${color.charAt(0).toUpperCase() + color.slice(1)}`;
     const button = document.getElementById(buttonId);
+
     if (colorStates[color]) {
         button.classList.add("active");
-        button.classList.remove("inactive");
+        button.classList.remove("inactive"); // Ensure this class is removed if it's used
+        // Set button color based on the active state if needed
     } else {
         button.classList.remove("active");
-        button.classList.add("inactive");
+        button.classList.add("inactive"); // Add this class if using it to style inactive buttons
+        // Optionally, set button color for inactive state if needed
     }
 }
 
-function toggleColor(color) {
+
+
+function toggleColorStateAndRefreshMap(color) {
     colorStates[color] = !colorStates[color]; // Toggle the state
-    updateButtonStyle(color);
-    // Add function calls here to apply the changes elsewhere, like updating the map
+    updateButtonStyle(color); // Update the button appearance
+
+    // If need to refresh the map or markers based on this new state, call those functions here
+    toggleMarkersByColor(color, colorStates[color]);
 }
 
 
+
+// Function to update dates globally
+function updateDatesFromSlider() {
+    let values = dateSlider.noUiSlider.get();
+    startDate = values[0]; // Make sure these are correctly formatted as your API expects
+    endDate = values[1];
+}
+
+// Update sensor data based on current dates and map state
+function refreshSensorData() {
+    // Reset all color buttons to true/pushed state
+    Object.keys(colorStates).forEach(color => {
+        colorStates[color] = true; // Set each color state to true
+        updateButtonStyle(color); // Update button styles to reflect the pushed state
+    });
+
+    updateDatesFromSlider(); // Make sure dates are up-to-date
+    clearMarkers(); // Clear existing markers before fetching new data
+    updateSensors(startDate, endDate, map); // Fetch and display new sensor data
+}
+
+// Call this function where appropriate, such as after loading new sensor data:
+document.getElementById('updateSensorsButton').addEventListener('click', function() {
+    resetButtonStates(); // Ensure this is called to reset states as needed
+    refreshSensorData(); // Load new data and refresh UI accordingly
+});
+
+
+function toggleMarkersByColor(color, show) {
+    markersByColor[color].forEach(marker => {
+        if (show) {
+            marker.addTo(map);
+        } else {
+            marker.remove();
+        }
+    });
+}
+
+
+document.getElementById('toggleRed').addEventListener('click', () => toggleColorStateAndRefreshMap('red'));
+document.getElementById('toggleOrange').addEventListener('click', () => toggleColorStateAndRefreshMap('orange'));
+document.getElementById('toggleGreen').addEventListener('click', () => toggleColorStateAndRefreshMap('green'));
+document.getElementById('toggleLightBlue').addEventListener('click', () => toggleColorStateAndRefreshMap('lightBlue'));
+
+
+
+function resetButtonStates() {
+    Object.keys(colorStates).forEach(color => {
+        colorStates[color] = true; // Set each color state to true initially
+        updateButtonStyle(color); // Apply the correct button style
+    });
+}
