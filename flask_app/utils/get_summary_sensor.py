@@ -2,7 +2,7 @@ import pandas as pd
 import sqlite3
 
 
-def return_table(begin_date, end_date):
+def return_table(begin_date, end_date,red,orange,green,lightBlue):
     # Set up sqlite
     connection = sqlite3.connect('static/data/sensors_readings_2016_present.db')
     
@@ -35,8 +35,22 @@ def return_table(begin_date, end_date):
 
     df = pd.merge(df,averages, on = 'category')
     
+    
+    
+    selected_colors =[]
+    if red == True:
+        selected_colors.append('red')
+    if orange == True:
+        selected_colors.append('orange')
+    if green == True:
+        selected_colors.append('green')
+    if lightBlue == True:
+        selected_colors.append('blue')
+    
+    df_income_colors = df.loc[df['category'].isin(selected_colors)]
+    
     connection.close()
-    return df
+    return df_income_colors
     
 
 

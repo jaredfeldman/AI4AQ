@@ -40,7 +40,7 @@ h1, h2, h3, h4, h5, h6 {
     display: flex;
     flex-direction: row;
     height: 100vh; /* Adjust height based on header's height */
-    padding-top: 289px;
+    padding-top: 210px;
 }
 
 .map-container {
@@ -71,15 +71,15 @@ h1, h2, h3, h4, h5, h6 {
 
 .btn-group {
     position: absolute;
-    top: 70px;
-    right: 80px; /* Position next to sidebar or adjust as needed */
+    top: 50px;
+    right: 100px; /* Position next to sidebar*/
     z-index: 1000;
 }
 
 .button-group-colors {
     position: absolute;
     top: 0px;
-    right: 175px;
+    right: 250px;
     width: 100px;
     z-index: 1000;
 }
@@ -138,23 +138,23 @@ h1, h2, h3, h4, h5, h6 {
 
 #info {
     padding: 6px;
-    background: rgba(255, 255, 255, 0.6);
-    border-radius: 5px;
-    top: 400px;
+    font-family: 'Helvetica', 'Arial', 'sans-serif';
+    font-size: 18px;
+    position: relative;
+    bottom:-700px;
     left: 10px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     z-index:1000;
 }
 
 /* Sidebar CSS - Adjust to slide from the left */
 #sidebar {
-    width: 250px; /* Adjust the width as necessary */
+    width: 300px; /* Adjust the width as necessary */
     height: 100%; /* Full height */
     position: fixed;
     top: 0; /* Align to the top */
-    left: -250px; /* Initially hide the sidebar off-screen to the left */
-    background-color: rgba(255, 200, 255, 0.8);
-    z-index: 1050;
+    left: -280px; /* Initially hide the sidebar off-screen to the left */
+    background-color: white;
+    z-index: 900;
     transition: left 0.5s; /* Smooth transition for sliding effect */
 }
 
@@ -188,11 +188,38 @@ h1, h2, h3, h4, h5, h6 {
 
 #toggle {
     position: fixed;
-    top: 20px;
-    right: 60px;
+    top: 130px;
+    left: 10px;
     display: flex;
-    width: 100px;
+    width: 110px;
     z-index: 1000; /* Ensure it's above the map */
 }
 
+#title-adjust {
+    position: relative;
+    top: -20px; /* Move up */
+}
+
+/*#colorToggle {*/
+/*    position: fixed;*/
+/*    top: 330px;*/
+/*    left: 10px;*/
+/*    display: flex;*/
+/*    width: 110px;*/
+/*    z-index: 1000; /* Ensure it's above the map */*/
+/*}*/
+
+/* Define styles for active and inactive states */
+.color-button {
+    transition: all 0.3s ease; /* Smooth transition for style changes */
+}
+
+.color-button.active {
+    box-shadow: 0 0 10px #000; /* Shadow for active state */
+    transform: scale(1.05); /* Scale up for active state */
+}
+
+.color-button.inactive {
+    opacity: 0.5; /* Semi-transparent for inactive state */
+}
 

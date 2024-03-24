@@ -33,9 +33,18 @@ def get_latest():
         # Retrieve query parameters
         begin_date = request.args.get('begin_date')
         end_date = request.args.get('end_date')
-
-        # Pass the dates to function
-        return summary_s.return_table(begin_date, end_date).to_json(orient='records')
+        
+        # Fetching the color states (true/false or any equivalent value you're sending)
+        red = request.args.get('red') == 'true'
+        orange = request.args.get('orange') == 'true'
+        green = request.args.get('green') == 'true'
+        lightBlue = request.args.get('lightBlue') == 'true'  # Updated to match JavaScript object key
+        
+        # Since you're using the boolean values to filter data, 
+        # make sure to pass these correctly to your summary_s.return_table function.
+        # It's unclear what your function expects for these color filters.
+        # Assuming it expects boolean values to include/exclude certain data:
+        return summary_s.return_table(begin_date, end_date, red, orange, green, lightBlue).to_json(orient='records')
     except Exception as e:
         traceback_str = ''.join(traceback.format_exception(etype=type(e), value=e, tb=e.__traceback__))
         app.logger.error(f"Error: {traceback_str}")

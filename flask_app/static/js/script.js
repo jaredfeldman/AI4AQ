@@ -2,6 +2,14 @@
 var startDate;
 var endDate;
 var allMarkers = [];
+let showColors = true;
+
+let colorStates = {
+    red: true,
+    orange: true,
+    green: true,
+    lightBlue: true
+};
 // Declare geojson layer variable globally
 var geojsonLayer;
 var centroidData;
@@ -64,16 +72,19 @@ function initializeDateSlider(dateArray, map) {
 function updateSensors(startDate, endDate, map) {
     clearMarkers();
     console.log("Formatted Dates:", startDate, endDate);
-    fetch(`/api/summary_sensor?begin_date=${startDate}&end_date=${endDate}`)
-        .then(response => response.json())
-        .then(data_sensor => {
-            addSensorMarkers(data_sensor, map);
-            // get data for bar graph
-            calculateBarGraph(data_sensor)
-            document.getElementById('sensorTitle').innerHTML = 'Main Sensor Title Temporary Text !!';
-        })
-        .catch(error => console.error('Error fetching sensor data:', error));
+    // Construct the URL with individual parameters for each color state
+    const url = `/api/summary_sensor?begin_date=${startDate}&end_date=${endDate}&red=${colorStates.red}&orange=${colorStates.orange}&green=${colorStates.green}&lightBlue=${colorStates.lightBlue}`;
+    
+    fetch(url)
+    .then(response => response.json())
+    .then(data_sensor => {
+        addSensorMarkers(data_sensor, map);
+        calculateBarGraph(data_sensor);
+        document.getElementById('sensorTitle').innerHTML = `<h2>${startDate} to ${endDate}</h2>`;
+    })
+    .catch(error => console.error('Error fetching sensor data:', error));
 }
+
 
 function addSensorMarkers(data_sensor, map) {
     data_sensor.forEach(sensor => {
@@ -112,6 +123,10 @@ function clearMarkers() {
 // Function to get color based on lowmod_pct
     
 function getColor(lowmod_pct) {
+    if (!showColors) {
+        return 'gray';
+    }
+    
     if (lowmod_pct > 0.75) {
         return 'red';
     } else if (lowmod_pct > 0.5) {
@@ -119,19 +134,20 @@ function getColor(lowmod_pct) {
     } else if (lowmod_pct > 0.25) {
         return 'green';
     } else {
-        return '#ADD8E6';
+        return '#33ccff'; // Light blue
     }
 }
+
 
 
 function style(feature) {
     return {
         fillColor: getColor(feature.properties.Lowmod_pct),
-        weight: 2,
+        weight: 4,
         opacity: 1,
         color: 'white',  // Default border color
         dashArray: '3',
-        fillOpacity: 0.6
+        fillOpacity: showColors ? 0.6 : 0.4
     };
 }
 
@@ -140,7 +156,7 @@ function highlightFeature(e) {
 
     layer.setStyle({
         weight: 5,
-        color: '#666',
+        color: 'green',
         dashArray: '',
         fillOpacity: 0.7
     });
@@ -272,7 +288,7 @@ function calculateBarGraph(data_sensor) {
                 case "red": return "#d62728";
                 case "orange": return "#ff7f0e";
                 case "green": return "#2ca02c";
-                default: return "#1f77b4"; // Default color
+                default: return "#33ccff"; // Default color
             }
         });
 }
@@ -347,3 +363,59 @@ function onEachFeature(feature, layer, map) {
         }
     });
 }
+
+document.getElementById('colorToggle').addEventListener('click', function() {
+    showColors = !showColors; // Toggle the state
+
+    updateMapColors();
+});
+
+function updateMapColors() {
+    if (geojsonLayer) {
+        geojsonLayer.eachLayer(function(layer) {
+            var lowmod_pct = layer.feature.properties.Lowmod_pct; // Ensure this matches actual property name
+            var newColor = showColors ? getColor(lowmod_pct) : 'gray'; // Use transparent color if showColors is false
+            layer.setStyle({
+                fillColor: newColor,
+                fillOpacity: showColors ? 0.6 : 0.4,
+                color: 'white', // This is outline color
+                weight: 4, // This is the outline weight
+                opacity: 1, // This controls the opacity of the outline
+                // Keep other styles as they are or adjust as needed
+            });
+        });
+    }
+}
+
+document.getElementById('toggleRed').addEventListener('click', function() {
+    toggleColor('red');
+});
+document.getElementById('toggleOrange').addEventListener('click', function() {
+    toggleColor('orange');
+});
+document.getElementById('toggleGreen').addEventListener('click', function() {
+    toggleColor('green');
+});
+document.getElementById('toggleLightBlue').addEventListener('click', function() {
+    toggleColor('lightBlue');
+});
+
+function updateButtonStyle(color) {
+    const buttonId = `toggle${color.charAt(0).toUpperCase() + color.slice(1)}`;
+    const button = document.getElementById(buttonId);
+    if (colorStates[color]) {
+        button.classList.add("active");
+        button.classList.remove("inactive");
+    } else {
+        button.classList.remove("active");
+        button.classList.add("inactive");
+    }
+}
+
+function toggleColor(color) {
+    colorStates[color] = !colorStates[color]; // Toggle the state
+    updateButtonStyle(color);
+    // Add function calls here to apply the changes elsewhere, like updating the map
+}
+
+
