@@ -227,25 +227,7 @@ function loadGeoJSONLayer(map) {
 }
 
     
-// Overlay box
-//document.addEventListener('DOMContentLoaded', function() {
-//    // After map initialization code
-//    showOverlayBox();
-//    updateDynamicText("Average AQ between 2020-01-07 and 2022-02-01 ");
-//});
-//
-//function showOverlayBox() {
-//    document.getElementById('overlay-box').style.display = 'block';
-//}
-//
-//function updateDynamicText(text) {
-//    document.getElementById('dynamic-text').innerText = text;
-//}
-//
-//// Updating text when the button in the overlay box is clicked
-//document.getElementById('overlay-button').addEventListener('click', function() {
-//    updateDynamicText("Button clicked!");
-//});
+
 
 function calculateBarGraph(data_sensor) {
     // Clear existing SVG content
@@ -483,10 +465,22 @@ function toggleMarkersByColor(color, show) {
 }
 
 
-document.getElementById('toggleRed').addEventListener('click', () => toggleColorStateAndRefreshMap('red'));
-document.getElementById('toggleOrange').addEventListener('click', () => toggleColorStateAndRefreshMap('orange'));
-document.getElementById('toggleGreen').addEventListener('click', () => toggleColorStateAndRefreshMap('green'));
-document.getElementById('toggleLightBlue').addEventListener('click', () => toggleColorStateAndRefreshMap('lightBlue'));
+document.getElementById('toggleRed').addEventListener('click', () => {
+    toggleColorStateAndRefreshMap('red')
+    updateJustGraph();
+});
+document.getElementById('toggleOrange').addEventListener('click', () => {
+    toggleColorStateAndRefreshMap('orange')
+    updateJustGraph();
+});
+document.getElementById('toggleGreen').addEventListener('click', () => {
+    toggleColorStateAndRefreshMap('green')
+    updateJustGraph();
+});
+document.getElementById('toggleLightBlue').addEventListener('click', () => {
+    toggleColorStateAndRefreshMap('lightBlue')
+    updateJustGraph();
+});
 
 
 
@@ -496,3 +490,19 @@ function resetButtonStates() {
         updateButtonStyle(color); // Apply the correct button style
     });
 }
+
+function updateJustGraph() {
+
+    const url = `/api/summary_sensor?begin_date=${startDate}&end_date=${endDate}&red=${colorStates.red}&orange=${colorStates.orange}&green=${colorStates.green}&lightBlue=${colorStates.lightBlue}`;
+
+    fetch(url)
+        .then(response => response.json())
+        .then(data_sensor => {
+
+            calculateBarGraph(data_sensor);
+
+        })
+        .catch(error => console.error('Error fetching sensor data:', error));
+}
+
+
