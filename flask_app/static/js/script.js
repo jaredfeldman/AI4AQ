@@ -4,6 +4,10 @@ var endDate = "2020-12-31"; // default end date
 var allMarkers = [];
 let showColors = true;
 
+// At the global level
+let currentGraphType = 'category'; // Default to category graph
+
+
 // store markers by color
 var markersByColor = {
     red: [],
@@ -143,7 +147,7 @@ function clearMarkers() {
         markersArray.forEach(marker => marker.remove());
         markersArray.length = 0; // Clear the array
     });
-    // Optionally clear the allMarkers array if it's still in use for other purposes
+    // clear the allMarkers array if it's still in use for other purposes
     allMarkers.forEach(marker => marker.remove());
     allMarkers.length = 0;
 }
@@ -430,7 +434,7 @@ function toggleColorStateAndRefreshMap(color) {
 // Function to update dates globally
 function updateDatesFromSlider() {
     let values = dateSlider.noUiSlider.get();
-    startDate = values[0]; // Make sure these are correctly formatted as your API expects
+    startDate = values[0];
     endDate = values[1];
 }
 
@@ -442,12 +446,12 @@ function refreshSensorData() {
         updateButtonStyle(color); // Update button styles to reflect the pushed state
     });
 
-    updateDatesFromSlider(); // Make sure dates are up-to-date
+    updateDatesFromSlider();
     clearMarkers(); // Clear existing markers before fetching new data
     updateSensors(startDate, endDate, map); // Fetch and display new sensor data
 }
 
-// Call this function where appropriate, such as after loading new sensor data:
+// Call this function after loading new sensor data:
 document.getElementById('updateSensorsButton').addEventListener('click', function() {
     resetButtonStates(); // Ensure this is called to reset states as needed
     refreshSensorData(); // Load new data and refresh UI accordingly
@@ -492,17 +496,129 @@ function resetButtonStates() {
 }
 
 function updateJustGraph() {
-
-    const url = `/api/summary_sensor?begin_date=${startDate}&end_date=${endDate}&red=${colorStates.red}&orange=${colorStates.orange}&green=${colorStates.green}&lightBlue=${colorStates.lightBlue}`;
+    let url;
+    if (currentGraphType === 'category') {
+        url = `/api/summary_sensor?begin_date=${startDate}&end_date=${endDate}&red=${colorStates.red}&orange=${colorStates.orange}&green=${colorStates.green}&lightBlue=${colorStates.lightBlue}`;
+    } else if (currentGraphType === 'county') {
+        url = `/api/county_avg?begin_date=${startDate}&end_date=${endDate}&red=${colorStates.red}&orange=${colorStates.orange}&green=${colorStates.green}&lightBlue=${colorStates.lightBlue}`;
+    } else {
+        console.error('Unknown graph type');
+        return;
+    }
 
     fetch(url)
         .then(response => response.json())
         .then(data_sensor => {
-
-            calculateBarGraph(data_sensor);
-
+            if (currentGraphType === 'category') {
+                calculateBarGraph(data_sensor);
+            } else if (currentGraphType === 'county') {
+                calculateCountyGraph(data_sensor);
+            }
         })
         .catch(error => console.error('Error fetching sensor data:', error));
 }
 
+
+
+// County Graph
+function calculateCountyGraph(data_sensor) {
+    // Clear existing SVG content
+    d3.select("#my_dataviz svg").remove();
+
+    // Use the first entry for each county as all entries within a county have the same cat_avg_pm2 value
+    let uniqueCountyData = Array.from(new Set(data_sensor.map(item => item.county)))
+        .map(county => {
+            let firstEntryInCounty = data_sensor.find(item => item.county === county);
+            return {
+                county: county,
+                county_avg_pm2: firstEntryInCounty.cat_avg_pm2,
+                county_avg_pm10: firstEntryInCounty.cat_avg_pm10
+            };
+        });
+
+    var data = uniqueCountyData;
+    console.log(uniqueCountyData);
+
+    var margin = {top: 10, right: 30, bottom: 30, left: 40},
+        width = 300 - margin.left - margin.right,
+        height = 300 - margin.top - margin.bottom;
+
+    var svg = d3.select("#my_dataviz")
+      .append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+      .append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+    // X axis
+    var x = d3.scaleBand()
+      .range([0, width])
+      .domain(data.map(d => d.county))
+      .padding(0.2);
+    svg.append("g")
+      .attr("transform", "translate(0," + height + ")")
+      .call(d3.axisBottom(x))
+      .selectAll("text")
+        .attr("transform", "translate(-10,0)rotate(-45)")
+        .style("text-anchor", "end");
+
+    // Add Y axis
+    var y = d3.scaleLinear()
+      .domain([0, d3.max(data, d => d.county_avg_pm2)])
+      .range([height, 0]);
+    svg.append("g")
+      .call(d3.axisLeft(y));
+
+    // Define colors for the bars
+    var color = d3.scaleOrdinal()
+      .domain(uniqueCountyData.map(d => d.county))
+      .range(d3.schemeSet2);
+
+    // Create the bars
+    svg.selectAll(".bar")
+      .data(data)
+      .enter().append("rect")
+        .attr("class", "bar")
+        .attr("x", d => x(d.county))
+        .attr("width", x.bandwidth())
+        .attr("y", d => y(d.county_avg_pm2))
+        .attr("height", d => height - y(d.county_avg_pm2))
+        .attr("fill", (d, i) => color(d.county));
+}
+
+function updateGraph(graphType) {
+    // Determine the URL based on graph type
+    let url;
+    if (graphType === 'category') {
+        url = `/api/summary_sensor?begin_date=${startDate}&end_date=${endDate}&red=${colorStates.red}&orange=${colorStates.orange}&green=${colorStates.green}&lightBlue=${colorStates.lightBlue}`;
+    } else if (graphType === 'county') {
+        url = `/api/county_avg?begin_date=${startDate}&end_date=${endDate}&red=${colorStates.red}&orange=${colorStates.orange}&green=${colorStates.green}&lightBlue=${colorStates.lightBlue}`;
+    } else {
+        console.error('Invalid graph type specified');
+        return;
+    }
+
+    // Fetch data and update the graph
+    fetch(url)
+        .then(response => response.json())
+        .then(data_sensor => {
+            if (graphType === 'category') {
+                calculateBarGraph(data_sensor);
+            } else if (graphType === 'county') {
+                calculateCountyGraph(data_sensor); //county graph function
+            }
+        })
+        .catch(error => console.error('Error fetching sensor data:', error));
+}
+
+// Add event listeners to buttons
+document.getElementById('categoryGraphButton').addEventListener('click', function() {
+    currentGraphType = 'category';
+    updateGraph('category');
+});
+
+document.getElementById('countyGraphButton').addEventListener('click', function() {
+    currentGraphType = 'county';
+    updateGraph('county');
+});
 
