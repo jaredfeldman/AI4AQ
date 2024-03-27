@@ -43,28 +43,7 @@
     
     <!-- Sidebar -->
     <div id="sidebar" class="border-right">
-<!--        <div class="sidebar-heading">Menu</div>-->
-<!--        <div class="list-group list-group-flush">-->
-<!--            <div>-->
-<!--              <ul class="navbar-nav me-auto mb-2 mb-lg-0">-->
-<!--                <li class="nav-item active">-->
-<!--                  <a class="nav-link" aria-current="page" href="#">Home</a>-->
-<!--                </li>-->
-<!--                <li class="nav-item">-->
-<!--                  <a class="nav-link" href="#">About</a>-->
-<!--                </li>-->
-<!--                <li class="nav-item">-->
-<!--                  <a class="nav-link" href="#">Data</a>-->
-<!--                </li>-->
-<!--                <li class="nav-item">-->
-<!--                  <a class="nav-link" href="#">Contact</a>-->
-<!--                </li>-->
-<!--              </ul>-->
-<!--            </div>-->
-<!--             Candy Apples Yummy!-->
-<!--            <!-- Add more links as needed -->-->
-<!--            <!--Hover Info-->-->
-<!--        </div>-->
+
         <div id="info">
             Hover over a Tract
         </div>
@@ -87,6 +66,26 @@
           <div class="p-5 text-center bg-image" style="
               height: 180px;
             ">
+
+<!--           <div class="list-group list-group-flush">-->
+<!--                <div>-->
+<!--                  <ul class="navbar-nav me-auto mb-2 mb-lg-0">-->
+<!--                    <li class="nav-item active">-->
+<!--                     <a class="nav-link" aria-current="page" href="#">Home</a>-->
+<!--                  </li>-->
+<!--                    <li class="nav-item">-->
+<!--                      <a class="nav-link" href="#">About</a>-->
+<!--                    </li>-->
+<!--                    <li class="nav-item">-->
+<!--                      <a class="nav-link" href="#">Data</a>-->
+<!--                    </li>-->
+<!--                   <li class="nav-item">-->
+<!--                      <a class="nav-link" href="#">Contact</a>-->
+<!--                  </li>-->
+<!--                 </ul>-->
+<!--                </div>-->
+<!--           </div>-->
+            
             
           <div class="d-flex justify-content-center align-items-center h-100 v-200">
             <div class="text-white">
@@ -115,34 +114,37 @@
                 
                 
                 <!-- Create a div for graph -->
-                <!-- Graph Toggle Buttons -->
+
 
                 <div id="my_dataviz"></div>
                 
-                <!--Buttons PM-->
-                <div class="btn-group mt-2" role="group" aria-label="Basic checkbox toggle button group">
-                    <button id="categoryGraphButton" class="btn btn-primary">Category Graph</button>
-                    <button id="countyGraphButton" class="btn btn-secondary">County Graph</button>
-                  <input type="checkbox" class="btn-check" id="btncheck1" autocomplete="off">
-                  <label class="btn btn-outline-primary" for="btncheck1">PM 2.5</label>
-
-                  <input type="checkbox" class="btn-check" id="btncheck2" autocomplete="off">
-                  <label class="btn btn-outline-primary" for="btncheck2">PM 10</label>
+                <!-- Graph Toggle Buttons -->
+                <div class="btn-group mt-2" role="group2" aria-label="Basic checkbox toggle button group" id="my_dataviz_buttons">
+                    <button id="categoryGraphButton" class="btn btn-primary">Income Levels</button>
+                    <button id="countyGraphButton" class="btn btn-secondary">County</button>
                 </div>
+                
+                <!--Buttons PM-->
+<!--                <div class="btn-group mt-2" role="group" aria-label="Basic checkbox toggle button group">-->
+<!---->
+<!--                  <input type="checkbox" class="btn-check" id="btncheck1" autocomplete="off">-->
+<!--                  <label class="btn btn-outline-primary" for="btncheck1">PM 2.5</label>-->
+<!---->
+<!--                  <input type="checkbox" class="btn-check" id="btncheck2" autocomplete="off">-->
+<!--                  <label class="btn btn-outline-primary" for="btncheck2">PM 10</label>-->
+<!--                </div>-->
                 
                 <!--Buttons Colors (add a class name "button-group-colors" for specific targeting)-->
                 <div class="btn-group mt-2 button-group-colors">
                     <button id="colorToggle">Toggle Colors</button>
-<!--                    <button type="button" class="btn btn-info" data-selected="false">High</button>-->
-<!--                    <button type="button" class="btn btn-success" data-selected="false">Mid</button>-->
-<!--                    <button type="button" class="btn btn-warning" data-selected="false">Low/Mid</button>-->
-<!--                    <button type="button" class="btn btn-danger" data-selected="false">Low</button>-->
-                <div class="color-toggle-buttons">
-                    <div class="color-toggle-buttons">
-                        <button id="toggleRed" class="color-button">Red</button>
-                        <button id="toggleOrange" class="color-button">Orange</button>
-                        <button id="toggleGreen" class="color-button">Green</button>
-                        <button id="toggleLightBlue" class="color-button">Light Blue</button>
+                        <button id="toggleSalt" class="color-button">Salt Lake</button>
+                        <button id="toggleWeb" class="color-button">Weber</button>
+                        <button id="toggleDav" class="color-button">Davis</button>
+    
+                        <button id="toggleRed" class="color-button">Low</button>
+                        <button id="toggleOrange" class="color-button">Low/Mid</button>
+                        <button id="toggleGreen" class="color-button">Mid</button>
+                        <button id="toggleLightBlue" class="color-button">High</button>
                     </div>
                 </div>
                 </div>
@@ -153,7 +155,7 @@
                 <!--Date Slider-->
                 <div id="slider-button-container">
                     <div id="date-slider"></div>
-                    <button id="updateSensorsButton">Update Sensors</button>
+                    <button id="updateSensorsButton">Date Range</button>
                 </div>
 
 

@@ -67,20 +67,24 @@ h1, h2, h3, h4, h5, h6 {
     z-index: 1000; /* Ensure it appears above the map */
 }
 
-
-
-.btn-group {
-    position: absolute;
-    top: 50px;
-    right: 100px; /* Position next to sidebar*/
-    z-index: 1000;
+#my_dataviz_buttons{
+    position: fixed;
+    right: 20px; /* Right side of the screen */
+    bottom: 430px; /* Up from the bottom */
+    width: 300px;
+    height: 40px;
+    border-radius: 8px; /* Optional: Rounded corners for the box */
+    z-index: 1000; /* Ensure it appears above the map */
+    
 }
+
+
 
 .button-group-colors {
     position: absolute;
     top: 0px;
-    right: 250px;
-    width: 100px;
+    right: 0px;
+    width: 300px;
     z-index: 1000;
 }
 
@@ -136,15 +140,24 @@ h1, h2, h3, h4, h5, h6 {
     z-index: 1000; /* Ensure it appears above the map */
 }
 
+
+
 #info {
-    padding: 6px;
-    font-family: 'Helvetica', 'Arial', 'sans-serif';
-    font-size: 18px;
-    position: relative;
-    bottom:-700px;
-    left: 10px;
-    z-index:1000;
+    padding: 10px 15px; /* Adds padding inside the div */
+    margin: 0px; /* Adds some space outside the div */
+    background-color: #f0f0f0; /* Light grey background */
+    border: 1px solid #ccc; /* Light grey border */
+    font-family: 'Arial', sans-serif; /* Typography */
+    font-size: 16px; /* Text size */
+    color: #333; /* Text color */
+    text-align: left; /* Center the text */
+    height: 400px;
+    position: relative; /* Position it absolutely within a relative container */
+    bottom: -700px; /* Distance from the top of the container */
+    left: 00px;; /* Distance from the right of the container */
+    z-index: 1000; /* Ensure it's above other elements */
 }
+
 
 /* Sidebar CSS - Adjust to slide from the left */
 #sidebar {
@@ -200,19 +213,49 @@ h1, h2, h3, h4, h5, h6 {
     top: -20px; /* Move up */
 }
 
-/*#colorToggle {*/
-/*    position: fixed;*/
-/*    top: 330px;*/
-/*    left: 10px;*/
-/*    display: flex;*/
-/*    width: 110px;*/
-/*    z-index: 1000; /* Ensure it's above the map *//*/
-/*}*/
+#colorToggle {
+    position: fixed;
+    top: 330px;
+    right: 10px;
+    display: flex;
+    width: 110px;
+    z-index: 1000; /* Ensure it's above the map /*/
+}
 
+#toggleSalt.active { background-color: #66cc99; color: white; }
+#toggleWeb.active { background-color: #ff9966; color: white; }
+#toggleDav.active { background-color: #9999cc; color: white; }
+#toggleLightBlue.active { background-color: #33ccff; color: white; }
 #toggleRed.active { background-color: red; color: white; }
 #toggleOrange.active { background-color: orange; color: white; }
 #toggleGreen.active { background-color: green; color: white; }
 #toggleLightBlue.active { background-color: #33ccff; color: white; }
 
 
+.btn-group {
+    display: flex; /* This will lay out the direct children of this container side by side */
+    flex-wrap: wrap; /* Allows buttons to wrap to the next line if the container's width is too small */
+    gap: 10px; /* Adds some space between the buttons */
+}
 
+.color-button, #colorToggle {
+    flex: 0 1 auto; /* Allows buttons to grow and shrink but not beyond their content's size */
+    cursor: pointer; /* Changes the mouse cursor to indicate clickable items */
+    /* Add other styling here such as background-color, color, border, etc. */
+}
+
+/* Example of a specific button styling */
+#colorToggle {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 0px;
+}
+
+.color-button {
+    border: none;
+    padding: 8px 12px;
+    border-radius: 0px;
+    margin: -5px;
+}

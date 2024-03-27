@@ -48,9 +48,10 @@ def return_table(begin_date, end_date,red,orange,green,lightBlue):
         selected_colors.append('blue')
     
     df_income_colors = df.loc[df['category'].isin(selected_colors)]
+    df = pd.merge(df_income_colors,df_color, on = ['sensor_id','category'])
     
     connection.close()
-    return df_income_colors
+    return df
     
     
 def return_county(begin_date, end_date,red,orange,green,lightBlue):
@@ -100,6 +101,7 @@ def return_county(begin_date, end_date,red,orange,green,lightBlue):
     df['avg_pm10'] = round(df['avg_pm10']).astype('int')
 
     df = pd.merge(df,averages, on = 'county')
+    df = pd.merge(df,df_color, on = ['sensor_id','county'])
     
     return df
     

@@ -10,18 +10,37 @@ let currentGraphType = 'category'; // Default to category graph
 
 // store markers by color
 var markersByColor = {
-    red: [],
-    orange: [],
-    green: [],
-    lightBlue: []
+    salt_red: [],
+    salt_orange: [],
+    salt_green: [],
+    salt_lightBlue: [],
+    web_red: [],
+    web_orange: [],
+    web_green: [],
+    web_lightBlue: [],
+    dav_red: [],
+    dav_orange: [],
+    dav_green: [],
+    dav_lightBlue: []
 };
 
 let colorStates = {
     red: true,
     orange: true,
     green: true,
-    lightBlue: true
+    lightBlue: true,
+    salt: true, // New
+    web: true, // New
+    dav: true, // New
 };
+
+
+//    turq: true, //#66cc99
+//    lightorange: true, //#ff9966
+//    purple: true //#9999cc
+
+
+
 // Declare geojson layer variable globally
 var geojsonLayer;
 var centroidData;
@@ -38,7 +57,10 @@ document.addEventListener('DOMContentLoaded', function() {
     updateButtonStyle('red');
     updateButtonStyle('orange');
     updateButtonStyle('green');
-     updateButtonStyle('lightBlue');
+    updateButtonStyle('lightBlue');
+    updateButtonStyle('salt');
+    updateButtonStyle('web');
+    updateButtonStyle('dav');
 });
 
 
@@ -89,7 +111,7 @@ function updateSensors(startDate, endDate, map) {
         .then(data_sensor => {
             addSensorMarkers(data_sensor, map);
             calculateBarGraph(data_sensor);
-            document.getElementById('sensorTitle').innerHTML = `<h2>${startDate} to ${endDate}</h2>`;
+            document.getElementById('sensorTitle').innerHTML = `<h2>Sensors Between ${startDate} and ${endDate}</h2>`;
         })
         .catch(error => console.error('Error fetching sensor data:', error));
 }
@@ -101,14 +123,24 @@ function addSensorMarkers(data_sensor, map) {
         var color; // Determine color for sensor base
 
         // Assign color based on criteria
+        if (sensor.county === 'Salt Lake County') {
+            county = 'salt';
+        } else if (sensor.county === 'Weber County') {
+            county = 'web';
+        } else if (sensor.county === 'Davis County') {
+            county = 'dav';
+        }
+        
+        console.log(county)
+        console.log(county + 'red')
         if (sensor.category === 'red') {
-            color = 'red';
+            color = county + '_red';
         } else if (sensor.category === 'green') {
-            color = 'green';
+            color = county + '_green';
         } else if (sensor.category === 'orange') {
-            color = 'orange';
+            color = county + '_orange';
         } else if (sensor.category === 'blue') {
-            color = 'lightBlue';
+            color = county + '_lightBlue';
         }
 
         // Construct the HTML for the marker
@@ -131,7 +163,7 @@ function addSensorMarkers(data_sensor, map) {
         marker.bindPopup(`<b>Sensor ID:</b> ${sensor.sensor_id}<br><b>PM2.5 Value:</b> ${Math.round(sensor.avg_pm2)}`);
         if (color) {
             markersByColor[color].push(marker); // Add marker to appropriate color category
-            if (colorStates[color]) { // Check if markers for this color should be displayed
+            if (colorStates[county]==true & colorStates[sensor.category] ==true) { // Check if markers for this color should be displayed
                 marker.addTo(map);
             }
         }
@@ -201,12 +233,12 @@ function highlightFeature(e) {
 
     // Update info panel with properties
     var properties = layer.feature.properties;
-    document.getElementById('info').innerHTML = 'Tract: ' + properties.Tract + '<br>Low Income: ' + properties.Low + '<br>Low/Moderate Income: ' + properties.Lowmod + '<br>Low/Mod Percentage: ' + properties.Lowmod_pct;
+    document.getElementById('info').innerHTML = 'Census Tract: ' + properties.Tract + '<br>Low Income: ' + properties.Low + '<br>Low/Moderate Income: ' + properties.Lowmod + '<br>Low/Mod Percentage: ' + properties.Lowmod_pct;
 }
 
 function resetHighlight(e) {
     geojsonLayer.resetStyle(e.target);
-    document.getElementById('info').innerHTML = 'Tract: ' + '<br>Low Income: ' + '<br>Low/Moderate Income: ' +  '<br>Low/Mod Percentage: '
+    document.getElementById('info').innerHTML = 'Census Tract: ' + '<br>Low Income: ' + '<br>Low/Moderate Income: ' +  '<br>Low/Mod Percentage: '
 }
 
 function onEachFeature(feature, layer) {
@@ -319,7 +351,7 @@ var greenIcon = L.icon({
     iconUrl: 'static/js/pin.png',
     //shadowUrl: 'static/js/shadow.png',
 
-    iconSize:     [8, 8], // size of the icon
+    iconSize:     [30, 30], // size of the icon
     //shadowSize:   [100, 100], // size of the shadow
     iconAnchor:   [4, 8], // point of the icon which will correspond to marker's location
     //shadowAnchor: [50, 96],  // the same for the shadow
@@ -421,12 +453,12 @@ function updateButtonStyle(color) {
 
 
 
-function toggleColorStateAndRefreshMap(color) {
+function toggleColorStateAndRefreshMap(color,theSplitType) {
     colorStates[color] = !colorStates[color]; // Toggle the state
     updateButtonStyle(color); // Update the button appearance
 
     // If need to refresh the map or markers based on this new state, call those functions here
-    toggleMarkersByColor(color, colorStates[color]);
+    toggleMarkersByColor(color, colorStates[color],theSplitType);
 }
 
 
@@ -458,31 +490,150 @@ document.getElementById('updateSensorsButton').addEventListener('click', functio
 });
 
 
-function toggleMarkersByColor(color, show) {
-    markersByColor[color].forEach(marker => {
-        if (show) {
-            marker.addTo(map);
-        } else {
-            marker.remove();
+function toggleMarkersByColor(color, show,theSplitType) {
+    
+//    colorStates = {
+//        red: true,
+//        orange: true,
+//        green: true,
+//        lightBlue: true,
+//        salt: true, // New
+//        web: true, // New
+//        dav: true, // New
+//    };
+    
+    if(theSplitType == 'color'){
+        if (colorStates['salt'] == true){
+            markersByColor['salt_' + color].forEach(marker => {
+                if (show) {
+                    marker.addTo(map);
+                } else {
+                    marker.remove();
+                }
+            })
         }
-    });
+                                                    
+        if (colorStates['web'] == true){
+            markersByColor['web_' + color].forEach(marker => {
+                if (show) {
+                    marker.addTo(map);
+                } else {
+                    marker.remove();
+                }
+            })
+        }
+                                                   
+       if (colorStates['dav'] == true){
+           markersByColor['dav_' + color].forEach(marker => {
+               if (show) {
+                   marker.addTo(map);
+               } else {
+                   marker.remove();
+               }
+           })
+       }
+    }
+    
+    else {
+        if (colorStates['red'] == true){
+            markersByColor[color + '_red'].forEach(marker => {
+                if (show) {
+                    marker.addTo(map);
+                } else {
+                    marker.remove();
+                }
+            })
+        }
+        if (colorStates['lightBlue'] == true){
+            markersByColor[color + '_lightBlue'].forEach(marker => {
+                if (show) {
+                    marker.addTo(map);
+                } else {
+                    marker.remove();
+                }
+            })
+        }
+        if (colorStates['green'] == true){
+            markersByColor[color + '_green'].forEach(marker => {
+                if (show) {
+                    marker.addTo(map);
+                } else {
+                    marker.remove();
+                }
+            })
+        }
+        if (colorStates['orange'] == true){
+            markersByColor[color + '_orange'].forEach(marker => {
+                if (show) {
+                    marker.addTo(map);
+                } else {
+                    marker.remove();
+                }
+            })
+        }
+        
+    }
 }
+
+//// Function to clear arrays for keys that match a given string
+//function clearArraysForMatch(string) {
+//    // Find matching keys
+//    const matchingKeys = Object.keys(markersByColor).filter(key => key.includes(string));
+//
+//    // Iterate over matching keys and clear their arrays
+//    for (let key of matchingKeys) {
+//        markersByColor[key] = []; // Clear the array
+//    }
+//
+//    // For demonstration, returning the modified object to see the result
+//    return markersByColor;
+//}
 
 
 document.getElementById('toggleRed').addEventListener('click', () => {
-    toggleColorStateAndRefreshMap('red')
+    toggleColorStateAndRefreshMap('red','color')
     updateJustGraph();
 });
 document.getElementById('toggleOrange').addEventListener('click', () => {
-    toggleColorStateAndRefreshMap('orange')
+    toggleColorStateAndRefreshMap('orange','color')
     updateJustGraph();
 });
 document.getElementById('toggleGreen').addEventListener('click', () => {
-    toggleColorStateAndRefreshMap('green')
+    toggleColorStateAndRefreshMap('green','color')
     updateJustGraph();
 });
 document.getElementById('toggleLightBlue').addEventListener('click', () => {
-    toggleColorStateAndRefreshMap('lightBlue')
+    toggleColorStateAndRefreshMap('lightBlue','color')
+    updateJustGraph();
+});
+
+// Example for one button, repeat for others
+document.getElementById('toggleSalt').addEventListener('click', () => {
+    // Toggle state
+    //colorStates.saltLake = !colorStates.saltLake;
+    // Update button appearance
+    toggleColorStateAndRefreshMap('salt','county')
+    // Refresh graph based on current graph type
+    updateJustGraph();
+});
+
+// Example for one button, repeat for others
+document.getElementById('toggleWeb').addEventListener('click', () => {
+    // Toggle state
+    //colorStates.saltLake = !colorStates.saltLake;
+    // Update button appearance
+    toggleColorStateAndRefreshMap('web','county')
+    // Refresh graph based on current graph type
+    updateJustGraph();
+});
+
+// Example for one button, repeat for others
+document.getElementById('toggleDav').addEventListener('click', () => {
+    // Toggle state
+    //colorStates.saltLake = !colorStates.saltLake;
+    // Update button appearance
+    toggleColorStateAndRefreshMap('dav','county')
+    // Refresh graph based on current graph type
     updateJustGraph();
 });
 
