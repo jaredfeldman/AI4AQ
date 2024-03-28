@@ -57,11 +57,9 @@
             
         <!-- Toggler Button -->
 
-          <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#sidebar" aria-expanded="false" aria-controls="sidebar" onclick="toggleSidebar()" id = "toggle">
-              Toggle Sidebar
-          </button>
+          <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#sidebar" aria-expanded="false" aria-controls="sidebar" onclick="toggleSidebar()" id = "toggle">Sidebar</button>
 
-
+          <button class="btn btn-primary" type="button" id="colorToggle">Colors</button>
           <!-- Background image -->
           <div class="p-5 text-center bg-image" style="
               height: 180px;
@@ -93,7 +91,7 @@
                   <h1 class="mb-3">Air Quality Justice Utah</h1>
                   <a class="btn btn-outline-light btn-lg" href="#!" role="button">Call to action</a>
                 </div>
-              <p><div id = 'sensorTitle'><h2> Sensor Readings</h2></div></p>
+              <p><div id = 'sensorTitle'><h2>Sensor Readings</h2></div></p>
             </div>
           </div>
         </header>
@@ -106,14 +104,6 @@
             <div class="map-container d-flex flex-column">
                 <!--Map-->
                 <div id="mapid"></div> <!-- Set a specific height for the map -->
-                <!--PM Checkboxes-->
-<!--                <div id="overlay-box" style="display: none;">-->
-<!--                    <p id="dynamic-text">Average AQ between 2020-01-07 and 2022-02-01</p>-->
-<!--                    <button id="overlay-button">Click me</button>-->
-<!--                </div>-->
-                
-                
-                <!-- Create a div for graph -->
 
 
                 <div id="my_dataviz"></div>
@@ -125,18 +115,14 @@
                 </div>
                 
                 <!--Buttons PM-->
-<!--                <div class="btn-group mt-2" role="group" aria-label="Basic checkbox toggle button group">-->
-<!---->
-<!--                  <input type="checkbox" class="btn-check" id="btncheck1" autocomplete="off">-->
-<!--                  <label class="btn btn-outline-primary" for="btncheck1">PM 2.5</label>-->
-<!---->
-<!--                  <input type="checkbox" class="btn-check" id="btncheck2" autocomplete="off">-->
-<!--                  <label class="btn btn-outline-primary" for="btncheck2">PM 10</label>-->
-<!--                </div>-->
+                <!-- Additional Toggle Buttons -->
+                <div class="btn-group mt-2" role="group" aria-label="Toggle button group" id="pmButtons">
+                    <button id="toggleButton1" class="btn btn-info">2.5</button>
+                    <button id="toggleButton2" class="btn btn-info">10</button>
+                </div>
                 
                 <!--Buttons Colors (add a class name "button-group-colors" for specific targeting)-->
                 <div class="btn-group mt-2 button-group-colors">
-                    <button id="colorToggle">Toggle Colors</button>
                         <button id="toggleSalt" class="color-button">Salt Lake</button>
                         <button id="toggleWeb" class="color-button">Weber</button>
                         <button id="toggleDav" class="color-button">Davis</button>

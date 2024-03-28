@@ -104,7 +104,7 @@ function initializeDateSlider(dateArray, map) {
 function updateSensors(startDate, endDate, map) {
     clearMarkers();
     console.log("Formatted Dates:", startDate, endDate);
-    const url = `/api/summary_sensor?begin_date=${startDate}&end_date=${endDate}&red=${colorStates.red}&orange=${colorStates.orange}&green=${colorStates.green}&lightBlue=${colorStates.lightBlue}`;
+    const url = `/api/summary_sensor?begin_date=${startDate}&end_date=${endDate}&red=${colorStates.red}&orange=${colorStates.orange}&green=${colorStates.green}&lightBlue=${colorStates.lightBlue}&salt=${colorStates.salt}&web=${colorStates.web}&dav=${colorStates.dav}`;
 
     fetch(url)
         .then(response => response.json())
@@ -264,7 +264,6 @@ function loadGeoJSONLayer(map) {
 
     
 
-
 function calculateBarGraph(data_sensor) {
     // Clear existing SVG content
     d3.select("#my_dataviz svg").remove();
@@ -286,7 +285,7 @@ function calculateBarGraph(data_sensor) {
     var data = firstCatAvgs;
     console.log(firstCatAvgs);
 
-    var margin = {top: 10, right: 30, bottom: 30, left: 40},
+    var margin = {top: 20, right: 30, bottom: 40, left: 40},
         width = 300 - margin.left - margin.right,
         height = 300 - margin.top - margin.bottom;
 
@@ -296,7 +295,15 @@ function calculateBarGraph(data_sensor) {
         .attr("height", height + margin.top + margin.bottom)
       .append("g")
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
+    
+    // Adding the title
+    svg.append("text")
+        .attr("x", (width / 2))
+        .attr("y", 0 - (margin.top / 2)) // Positioning the title at the top with some margin
+        .attr("text-anchor", "middle")  // This ensures the text is centered at the given x position
+        .style("font-size", "16px")
+        .style("text-decoration", "underline")
+        .text("AQ Average at Income Level");
 
     // X axis
     var x = d3.scaleBand()
@@ -649,14 +656,16 @@ function resetButtonStates() {
 function updateJustGraph() {
     let url;
     if (currentGraphType === 'category') {
-        url = `/api/summary_sensor?begin_date=${startDate}&end_date=${endDate}&red=${colorStates.red}&orange=${colorStates.orange}&green=${colorStates.green}&lightBlue=${colorStates.lightBlue}`;
+        url = `/api/summary_sensor?begin_date=${startDate}&end_date=${endDate}&red=${colorStates.red}&orange=${colorStates.orange}&green=${colorStates.green}&lightBlue=${colorStates.lightBlue}&salt=${colorStates.salt}&web=${colorStates.web}&dav=${colorStates.dav}`;
     } else if (currentGraphType === 'county') {
-        url = `/api/county_avg?begin_date=${startDate}&end_date=${endDate}&red=${colorStates.red}&orange=${colorStates.orange}&green=${colorStates.green}&lightBlue=${colorStates.lightBlue}`;
+        url =
+            `/api/county_avg?begin_date=${startDate}&end_date=${endDate}&red=${colorStates.red}&orange=${colorStates.orange}&green=${colorStates.green}&lightBlue=${colorStates.lightBlue}&salt=${colorStates.salt}&web=${colorStates.web}&dav=${colorStates.dav}`;
     } else {
         console.error('Unknown graph type');
         return;
     }
 
+    console.log('lightning round')
     fetch(url)
         .then(response => response.json())
         .then(data_sensor => {
@@ -667,6 +676,100 @@ function updateJustGraph() {
             }
         })
         .catch(error => console.error('Error fetching sensor data:', error));
+}
+
+// BAR GRAPHS -------------------------------
+
+function calculateBarGraph(data_sensor) {
+    // Clear existing SVG content
+    d3.select("#my_dataviz svg").remove();
+
+    // Predefined order of categories from low to high
+    const categoryOrder = ['red', 'orange', 'green', 'blue'];
+
+    // Mapping of category to labels
+    const categoryLabels = {
+        red: 'Low',
+        orange: 'Low/Med',
+        green: 'Med',
+        blue: 'High',
+    };
+
+    let categories = [...new Set(data_sensor.map(item => item.category))];
+    let firstCatAvgs = categories.map(category => {
+        let firstEntry = data_sensor.find(item => item.category === category);
+        return {
+            category: category,
+            cat_avg_pm2: firstEntry.cat_avg_pm2,
+            cat_avg_pm10: firstEntry.cat_avg_pm10
+        };
+    });
+
+    // Sort data based on the predefined category order
+    firstCatAvgs.sort((a, b) => categoryOrder.indexOf(a.category) - categoryOrder.indexOf(b.category));
+
+    var data = firstCatAvgs;
+
+    var margin = {top: 40, right: 30, bottom: 50, left: 40},
+        width = 320 - margin.left - margin.right,
+        height = 320 - margin.top - margin.bottom;
+
+    var svg = d3.select("#my_dataviz")
+      .append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+      .append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+    // Adding the title
+    svg.append("text")
+        .attr("x", (width / 2))
+        .attr("y", 0 - (margin.top / 2))
+        .attr("text-anchor", "middle")
+        .style("font-size", "16px")
+        .style("text-decoration", "underline")
+        .text("AQ Average at Income Level");
+
+    // X axis with labels based on categoryLabels mapping
+    var x = d3.scaleBand()
+      .range([0, width])
+      .domain(data.map(d => categoryLabels[d.category])) // Use label mapping for domain
+      .padding(0.2);
+    svg.append("g")
+      .attr("transform", "translate(0," + height + ")")
+      .call(d3.axisBottom(x))
+      .selectAll("text")
+        .attr("transform", "translate(10,0)rotate(0)")
+        .style("text-anchor", "end");
+
+    // Add Y axis
+    var y = d3.scaleLinear()
+      .domain([0, d3.max(data, d => d.cat_avg_pm2)])
+      .range([height, 0]);
+    svg.append("g")
+      .call(d3.axisLeft(y));
+
+    var color = d3.scaleOrdinal()
+      .domain(categories)
+      .range(d3.schemeSet2);
+
+    svg.selectAll(".bar")
+      .data(data)
+      .enter().append("rect")
+        .attr("class", "bar")
+        .attr("x", d => x(categoryLabels[d.category])) // Use the label mapping for x position
+        .attr("width", x.bandwidth())
+        .attr("y", d => y(d.cat_avg_pm2))
+        .attr("height", d => height - y(d.cat_avg_pm2))
+        .attr("fill", d => {
+            // Color based on the category
+            switch(d.category) {
+                case "red": return "#d62728";
+                case "orange": return "#ff7f0e";
+                case "green": return "#2ca02c";
+                default: return "#33ccff"; // Default color
+            }
+        });
 }
 
 
@@ -690,9 +793,9 @@ function calculateCountyGraph(data_sensor) {
     var data = uniqueCountyData;
     console.log(uniqueCountyData);
 
-    var margin = {top: 10, right: 30, bottom: 30, left: 40},
-        width = 300 - margin.left - margin.right,
-        height = 300 - margin.top - margin.bottom;
+    var margin = {top: 40, right: 40, bottom: 50, left: 40},
+        width = 320 - margin.left - margin.right,
+        height = 320 - margin.top - margin.bottom;
 
     var svg = d3.select("#my_dataviz")
       .append("svg")
@@ -700,6 +803,15 @@ function calculateCountyGraph(data_sensor) {
         .attr("height", height + margin.top + margin.bottom)
       .append("g")
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+    
+    // Adding the title
+    svg.append("text")
+        .attr("x", (width / 2))
+        .attr("y", 0 - (margin.top / 2)) // Positioning the title at the top with some margin
+        .attr("text-anchor", "middle")
+        .style("font-size", "16px")
+        .style("text-decoration", "underline")
+        .text("AQ Average at County Level");
 
     // X axis
     var x = d3.scaleBand()
@@ -710,7 +822,7 @@ function calculateCountyGraph(data_sensor) {
       .attr("transform", "translate(0," + height + ")")
       .call(d3.axisBottom(x))
       .selectAll("text")
-        .attr("transform", "translate(-10,0)rotate(-45)")
+        .attr("transform", "translate(14,0)rotate(0)")
         .style("text-anchor", "end");
 
     // Add Y axis
@@ -734,16 +846,22 @@ function calculateCountyGraph(data_sensor) {
         .attr("width", x.bandwidth())
         .attr("y", d => y(d.county_avg_pm2))
         .attr("height", d => height - y(d.county_avg_pm2))
-        .attr("fill", (d, i) => color(d.county));
+        .attr("fill", (d) => {
+            switch(d.county) {
+                case "Salt Lake County": return "#66cc99";
+                case "Weber County": return "#ff9966";
+                default: return "#9999cc"; // Default color for other counties
+            }
+        });
 }
 
 function updateGraph(graphType) {
     // Determine the URL based on graph type
     let url;
     if (graphType === 'category') {
-        url = `/api/summary_sensor?begin_date=${startDate}&end_date=${endDate}&red=${colorStates.red}&orange=${colorStates.orange}&green=${colorStates.green}&lightBlue=${colorStates.lightBlue}`;
+        url = `/api/summary_sensor?begin_date=${startDate}&end_date=${endDate}&red=${colorStates.red}&orange=${colorStates.orange}&green=${colorStates.green}&lightBlue=${colorStates.lightBlue}&salt=${colorStates.salt}&web=${colorStates.web}&dav=${colorStates.dav}`;
     } else if (graphType === 'county') {
-        url = `/api/county_avg?begin_date=${startDate}&end_date=${endDate}&red=${colorStates.red}&orange=${colorStates.orange}&green=${colorStates.green}&lightBlue=${colorStates.lightBlue}`;
+        url = `/api/county_avg?begin_date=${startDate}&end_date=${endDate}&red=${colorStates.red}&orange=${colorStates.orange}&green=${colorStates.green}&lightBlue=${colorStates.lightBlue}&salt=${colorStates.salt}&web=${colorStates.web}&dav=${colorStates.dav}`;
     } else {
         console.error('Invalid graph type specified');
         return;

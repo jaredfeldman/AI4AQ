@@ -2,7 +2,7 @@ import pandas as pd
 import sqlite3
 
 
-def return_table(begin_date, end_date,red,orange,green,lightBlue):
+def return_table(begin_date, end_date,red,orange,green,lightBlue,salt,web,dav):
     # Set up sqlite
     connection = sqlite3.connect('static/data/sensors_readings_2016_present.db')
     
@@ -20,6 +20,17 @@ def return_table(begin_date, end_date,red,orange,green,lightBlue):
     # Join with color categories
     df_color = pd.read_csv('static/data/sensor_categories.csv')
     df = pd.merge(df,df_color, on = 'sensor_id')
+    
+    selected_counties =[]
+    if salt == True:
+        selected_counties.append('Salt Lake County')
+    if web == True:
+        selected_counties.append('Weber County')
+    if dav == True:
+        selected_counties.append('Davis County')
+    
+    df = df.loc[df['county'].isin(selected_counties)]
+    
     df.drop(['county'], axis=1, inplace=True)
     # Get category averages
     averages = df.groupby('category').mean().reset_index()
@@ -34,8 +45,6 @@ def return_table(begin_date, end_date,red,orange,green,lightBlue):
     df['avg_pm10'] = round(df['avg_pm10']).astype('int')
 
     df = pd.merge(df,averages, on = 'category')
-    
-    
     
     selected_colors =[]
     if red == True:
@@ -54,22 +63,20 @@ def return_table(begin_date, end_date,red,orange,green,lightBlue):
     return df
     
     
-def return_county(begin_date, end_date,red,orange,green,lightBlue):
+def return_county(begin_date, end_date,red,orange,green,lightBlue,salt,web,dav):
     # Set up sqlite
     connection = sqlite3.connect('static/data/sensors_readings_2016_present.db')
     
-    # Assemble Query with proper placement of WHERE clause and using parameterized queries
+    # Assemble Query
     sql_query = """
     SELECT sensor_id, latitude, longitude, altitude, AVG(pm2) AS avg_pm2, AVG(pm10) AS avg_pm10
     FROM sensors_readings
-    WHERE (date BETWEEN ? AND ?)
+    WHERE date(date) BETWEEN ? AND ?
     GROUP BY sensor_id, latitude, longitude, altitude
     """
     
-    # Execute the query with parameter substitution to prevent SQL injection
+    # Execute the query
     df = pd.read_sql_query(sql_query, connection, params=(begin_date, end_date))
-    
-    connection.close()
     
     # Join with color categories
     df_color = pd.read_csv('static/data/sensor_categories.csv')
@@ -85,7 +92,7 @@ def return_county(begin_date, end_date,red,orange,green,lightBlue):
     if lightBlue == True:
         selected_colors.append('blue')
     
-    df = df.loc[df['category'].isin(selected_colors)]
+    df = df.loc[df['category'].isin(selected_colors)].reset_index()
     
     df.drop(['category'], axis=1, inplace=True)
     # Get category averages
@@ -101,9 +108,24 @@ def return_county(begin_date, end_date,red,orange,green,lightBlue):
     df['avg_pm10'] = round(df['avg_pm10']).astype('int')
 
     df = pd.merge(df,averages, on = 'county')
+         
+    
+    selected_counties =[]
+    if salt == True:
+        selected_counties.append('Salt Lake County')
+    if web == True:
+        selected_counties.append('Weber County')
+    if dav == True:
+        selected_counties.append('Davis County')
+                 
+    
+    df = df.loc[df['county'].isin(selected_counties)]
     df = pd.merge(df,df_color, on = ['sensor_id','county'])
     
+    
+    connection.close()
     return df
+    
     
 
 

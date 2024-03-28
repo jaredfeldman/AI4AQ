@@ -57,9 +57,9 @@ h1, h2, h3, h4, h5, h6 {
 #my_dataviz {
     position: fixed;
     right: 20px; /* Right side of the screen */
-    bottom: 130px; /* Up from the bottom */
+    bottom: 180px; /* Up from the bottom */
     width: 300px;
-    height: 300px;
+    height: 320px;
     background-color: rgba(255, 255, 255, 0.8); 
     padding: 10px;
     border-radius: 5px; /* Optional: Rounded corners for the box */
@@ -70,7 +70,7 @@ h1, h2, h3, h4, h5, h6 {
 #my_dataviz_buttons{
     position: fixed;
     right: 20px; /* Right side of the screen */
-    bottom: 430px; /* Up from the bottom */
+    top: 760px; /* Up from the bottom */
     width: 300px;
     height: 40px;
     border-radius: 8px; /* Optional: Rounded corners for the box */
@@ -78,16 +78,24 @@ h1, h2, h3, h4, h5, h6 {
     
 }
 
-
-
 .button-group-colors {
     position: absolute;
-    top: 0px;
+    top: 200px;
     right: 0px;
     width: 300px;
     z-index: 1000;
 }
 
+#pmButtons {
+    position: fixed;
+    right: 560px; /* Right side of the screen */
+    top: 245px; /* Up from the bottom */
+    width: 100px;
+    height: 40px;
+    border-radius: 8px; /
+    z-index: 1000;
+    
+}
 
 .leaflet-control-container { position: absolute; right: 56px }
 
@@ -198,29 +206,11 @@ h1, h2, h3, h4, h5, h6 {
     font-weight: bold;
 }
 
-
-#toggle {
-    position: fixed;
-    top: 130px;
-    left: 10px;
-    display: flex;
-    width: 110px;
-    z-index: 1000; /* Ensure it's above the map */
-}
-
 #title-adjust {
     position: relative;
     top: -20px; /* Move up */
 }
 
-#colorToggle {
-    position: fixed;
-    top: 330px;
-    right: 10px;
-    display: flex;
-    width: 110px;
-    z-index: 1000; /* Ensure it's above the map /*/
-}
 
 #toggleSalt.active { background-color: #66cc99; color: white; }
 #toggleWeb.active { background-color: #ff9966; color: white; }
@@ -233,6 +223,9 @@ h1, h2, h3, h4, h5, h6 {
 
 
 .btn-group {
+    right: 50px;
+    top: 40px;
+    width: 500px;
     display: flex; /* This will lay out the direct children of this container side by side */
     flex-wrap: wrap; /* Allows buttons to wrap to the next line if the container's width is too small */
     gap: 10px; /* Adds some space between the buttons */
@@ -241,17 +234,34 @@ h1, h2, h3, h4, h5, h6 {
 .color-button, #colorToggle {
     flex: 0 1 auto; /* Allows buttons to grow and shrink but not beyond their content's size */
     cursor: pointer; /* Changes the mouse cursor to indicate clickable items */
-    /* Add other styling here such as background-color, color, border, etc. */
 }
 
-/* Example of a specific button styling */
 #colorToggle {
     background-color: #007bff;
     color: white;
     border: none;
     padding: 8px 12px;
-    border-radius: 0px;
+    border-radius: 5px;
 }
+
+#colorToggle {
+    position: fixed;
+    top: 150px;
+    left: 100px;
+    display: flex;
+    width: 70px;
+    z-index: 1000;
+}
+
+#toggle {
+    position: fixed;
+    top: 150px;
+    left: 10px;
+    display: flex;
+    width: 80px;
+    z-index: 1000; /* Ensure it's above the map */
+}
+
 
 .color-button {
     border: none;

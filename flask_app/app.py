@@ -38,9 +38,14 @@ def get_latest():
         red = request.args.get('red') == 'true'
         orange = request.args.get('orange') == 'true'
         green = request.args.get('green') == 'true'
-        lightBlue = request.args.get('lightBlue') == 'true'  # Updated to match JavaScript object key
+        lightBlue = request.args.get('lightBlue') == 'true'
         
-        return summary_s.return_table(begin_date, end_date, red, orange, green, lightBlue).to_json(orient='records')
+        # Fetching the county
+        salt = request.args.get('salt') == 'true'
+        web = request.args.get('web') == 'true'
+        dav = request.args.get('dav') == 'true'
+        
+        return summary_s.return_table(begin_date, end_date, red, orange, green, lightBlue,salt,web,dav).to_json(orient='records')
     except Exception as e:
         traceback_str = ''.join(traceback.format_exception(etype=type(e), value=e, tb=e.__traceback__))
         app.logger.error(f"Error: {traceback_str}")
@@ -58,9 +63,14 @@ def get_latest_county():
         red = request.args.get('red') == 'true'
         orange = request.args.get('orange') == 'true'
         green = request.args.get('green') == 'true'
-        lightBlue = request.args.get('lightBlue') == 'true'  # Updated to match JavaScript object key
+        lightBlue = request.args.get('lightBlue') == 'true'
         
-        return summary_s.return_county(begin_date, end_date, red, orange, green, lightBlue).to_json(orient='records')
+        # Fetching the county
+        salt = request.args.get('salt') == 'true'
+        web = request.args.get('web') == 'true'
+        dav = request.args.get('dav') == 'true'
+        
+        return summary_s.return_county(begin_date, end_date, red, orange, green, lightBlue,salt,web,dav).to_json(orient='records')
     except Exception as e:
         traceback_str = ''.join(traceback.format_exception(etype=type(e), value=e, tb=e.__traceback__))
         app.logger.error(f"Error: {traceback_str}")
