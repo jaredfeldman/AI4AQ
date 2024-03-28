@@ -73,7 +73,7 @@ h1, h2, h3, h4, h5, h6 {
     top: 760px; /* Up from the bottom */
     width: 300px;
     height: 40px;
-    border-radius: 8px; /* Optional: Rounded corners for the box */
+    border-radius: 8px; 
     z-index: 1000; /* Ensure it appears above the map */
     
 }
@@ -92,7 +92,7 @@ h1, h2, h3, h4, h5, h6 {
     top: 245px; /* Up from the bottom */
     width: 100px;
     height: 40px;
-    border-radius: 8px; /
+    border-radius: 8px;
     z-index: 1000;
     
 }
@@ -234,8 +234,10 @@ h1, h2, h3, h4, h5, h6 {
 .color-button, #colorToggle {
     flex: 0 1 auto; /* Allows buttons to grow and shrink but not beyond their content's size */
     cursor: pointer; /* Changes the mouse cursor to indicate clickable items */
+    /* Add other styling here such as background-color, color, border, etc. */
 }
 
+/* Example of a specific button styling */
 #colorToggle {
     background-color: #007bff;
     color: white;

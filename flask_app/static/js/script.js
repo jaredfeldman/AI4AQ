@@ -6,6 +6,8 @@ let showColors = true;
 
 // At the global level
 let currentGraphType = 'category'; // Default to category graph
+var activeMetric = 'pm2.5'; // This can be 'pm2.5' or 'pm10'
+
 
 
 // store markers by color
@@ -81,6 +83,11 @@ function fetchDateRangeAndInitializeSlider(map) {
         .then(data => {
             var dateArray = data.map(item => item.date);
             initializeDateSlider(dateArray, map);
+            //document.addEventListener('DOMContentLoaded', function() {
+            //    // Trigger click event on the first toggle button to activate PM2.5 on page load
+        // Load sensors on start -- want to change this to present
+        document.getElementById('updateSensorsButton').click();
+            //});
         })
         .catch(error => console.error('Error fetching date range:', error));
 }
@@ -103,7 +110,7 @@ function initializeDateSlider(dateArray, map) {
 
 function updateSensors(startDate, endDate, map) {
     clearMarkers();
-    console.log("Formatted Dates:", startDate, endDate);
+    
     const url = `/api/summary_sensor?begin_date=${startDate}&end_date=${endDate}&red=${colorStates.red}&orange=${colorStates.orange}&green=${colorStates.green}&lightBlue=${colorStates.lightBlue}&salt=${colorStates.salt}&web=${colorStates.web}&dav=${colorStates.dav}`;
 
     fetch(url)
@@ -111,7 +118,8 @@ function updateSensors(startDate, endDate, map) {
         .then(data_sensor => {
             addSensorMarkers(data_sensor, map);
             calculateBarGraph(data_sensor);
-            document.getElementById('sensorTitle').innerHTML = `<h2>Sensors Between ${startDate} and ${endDate}</h2>`;
+            document.getElementById('sensorTitle').innerHTML = `<h4>${activeMetric} Levels <span style="font-size: smaller;">(between ${startDate} and ${endDate}</span>)</h4>`;
+;
         })
         .catch(error => console.error('Error fetching sensor data:', error));
 }
@@ -131,8 +139,6 @@ function addSensorMarkers(data_sensor, map) {
             county = 'dav';
         }
         
-        console.log(county)
-        console.log(county + 'red')
         if (sensor.category === 'red') {
             color = county + '_red';
         } else if (sensor.category === 'green') {
@@ -157,10 +163,11 @@ function addSensorMarkers(data_sensor, map) {
             iconAnchor: [16.5, 37], // Adjust on the size of icon
             popupAnchor: [0, -38] // Adjust to position the popup
         });
-
+        
         // Create the marker with the custom icon and add to map
         var marker = L.marker([sensor.latitude, sensor.longitude], {icon: customIcon});
         marker.bindPopup(`<b>Sensor ID:</b> ${sensor.sensor_id}<br><b>PM2.5 Value:</b> ${Math.round(sensor.avg_pm2)}`);
+        marker.sensorData = sensor;
         if (color) {
             markersByColor[color].push(marker); // Add marker to appropriate color category
             if (colorStates[county]==true & colorStates[sensor.category] ==true) { // Check if markers for this color should be displayed
@@ -283,7 +290,7 @@ function calculateBarGraph(data_sensor) {
     });
 
     var data = firstCatAvgs;
-    console.log(firstCatAvgs);
+    
 
     var margin = {top: 20, right: 30, bottom: 40, left: 40},
         width = 300 - margin.left - margin.right,
@@ -302,8 +309,7 @@ function calculateBarGraph(data_sensor) {
         .attr("y", 0 - (margin.top / 2)) // Positioning the title at the top with some margin
         .attr("text-anchor", "middle")  // This ensures the text is centered at the given x position
         .style("font-size", "16px")
-        .style("text-decoration", "underline")
-        .text("AQ Average at Income Level");
+        .text("");
 
     // X axis
     var x = d3.scaleBand()
@@ -380,18 +386,14 @@ function loadCentroidData(callback) {
 }
 
 function getCentroidForObjectID(objectID) {
-    console.log('apple');
-    console.log(objectID);
-    console.log('banana');
-    console.log("Searching centroid for OBJECTID:", objectID); // Log the OBJECTID being searched for
+
     const feature = centroidData.features.find(f => f.properties.OBJECTID === objectID);
-    console.log("Matching feature:", feature); // Check if a matching feature is found
-    console.log('candy');
+
     if (feature && feature.geometry && feature.geometry.coordinates) {
         console.log('Geometry Coordinates:', feature.geometry.coordinates);
         // Since geometry.coordinates is an array [lng, lat]
         const coords = feature.geometry.coordinates;
-        console.log('rock and roll');
+        
         return coords.length === 2 ? coords : null; // This check ensures that coords is an array with two elements.
     }
     return null;
@@ -454,7 +456,7 @@ function updateButtonStyle(color) {
     } else {
         button.classList.remove("active");
         button.classList.add("inactive"); // Add this class if using it to style inactive buttons
-        // Optionally, set button color for inactive state if needed
+
     }
 }
 
@@ -464,7 +466,7 @@ function toggleColorStateAndRefreshMap(color,theSplitType) {
     colorStates[color] = !colorStates[color]; // Toggle the state
     updateButtonStyle(color); // Update the button appearance
 
-    // If need to refresh the map or markers based on this new state, call those functions here
+    // refresh the map or markers based on this new state, call those functions here
     toggleMarkersByColor(color, colorStates[color],theSplitType);
 }
 
@@ -494,20 +496,12 @@ function refreshSensorData() {
 document.getElementById('updateSensorsButton').addEventListener('click', function() {
     resetButtonStates(); // Ensure this is called to reset states as needed
     refreshSensorData(); // Load new data and refresh UI accordingly
+    
 });
 
 
 function toggleMarkersByColor(color, show,theSplitType) {
     
-//    colorStates = {
-//        red: true,
-//        orange: true,
-//        green: true,
-//        lightBlue: true,
-//        salt: true, // New
-//        web: true, // New
-//        dav: true, // New
-//    };
     
     if(theSplitType == 'color'){
         if (colorStates['salt'] == true){
@@ -617,8 +611,6 @@ document.getElementById('toggleLightBlue').addEventListener('click', () => {
 // Example for one button, repeat for others
 document.getElementById('toggleSalt').addEventListener('click', () => {
     // Toggle state
-    //colorStates.saltLake = !colorStates.saltLake;
-    // Update button appearance
     toggleColorStateAndRefreshMap('salt','county')
     // Refresh graph based on current graph type
     updateJustGraph();
@@ -626,8 +618,6 @@ document.getElementById('toggleSalt').addEventListener('click', () => {
 
 // Example for one button, repeat for others
 document.getElementById('toggleWeb').addEventListener('click', () => {
-    // Toggle state
-    //colorStates.saltLake = !colorStates.saltLake;
     // Update button appearance
     toggleColorStateAndRefreshMap('web','county')
     // Refresh graph based on current graph type
@@ -636,8 +626,6 @@ document.getElementById('toggleWeb').addEventListener('click', () => {
 
 // Example for one button, repeat for others
 document.getElementById('toggleDav').addEventListener('click', () => {
-    // Toggle state
-    //colorStates.saltLake = !colorStates.saltLake;
     // Update button appearance
     toggleColorStateAndRefreshMap('dav','county')
     // Refresh graph based on current graph type
@@ -649,7 +637,10 @@ document.getElementById('toggleDav').addEventListener('click', () => {
 function resetButtonStates() {
     Object.keys(colorStates).forEach(color => {
         colorStates[color] = true; // Set each color state to true initially
-        updateButtonStyle(color); // Apply the correct button style
+        updateButtonStyle(color);
+            // Trigger click event on the first toggle button to activate PM2.5 on page load
+        document.getElementById('toggleButton1').click();
+
     });
 }
 
@@ -665,7 +656,7 @@ function updateJustGraph() {
         return;
     }
 
-    console.log('lightning round')
+    
     fetch(url)
         .then(response => response.json())
         .then(data_sensor => {
@@ -721,19 +712,16 @@ function calculateBarGraph(data_sensor) {
       .append("g")
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-    // Adding the title
     svg.append("text")
         .attr("x", (width / 2))
         .attr("y", 0 - (margin.top / 2))
         .attr("text-anchor", "middle")
         .style("font-size", "16px")
-        .style("text-decoration", "underline")
-        .text("AQ Average at Income Level");
+        .text(`${activeMetric} Average at Income Level`);
 
-    // X axis with labels based on categoryLabels mapping
     var x = d3.scaleBand()
       .range([0, width])
-      .domain(data.map(d => categoryLabels[d.category])) // Use label mapping for domain
+      .domain(data.map(d => categoryLabels[d.category]))
       .padding(0.2);
     svg.append("g")
       .attr("transform", "translate(0," + height + ")")
@@ -742,9 +730,9 @@ function calculateBarGraph(data_sensor) {
         .attr("transform", "translate(10,0)rotate(0)")
         .style("text-anchor", "end");
 
-    // Add Y axis
+    var yDomain = activeMetric === 'pm2.5' ? d3.max(data, d => d.cat_avg_pm2) : d3.max(data, d => d.cat_avg_pm10);
     var y = d3.scaleLinear()
-      .domain([0, d3.max(data, d => d.cat_avg_pm2)])
+      .domain([0, yDomain])
       .range([height, 0]);
     svg.append("g")
       .call(d3.axisLeft(y));
@@ -757,12 +745,11 @@ function calculateBarGraph(data_sensor) {
       .data(data)
       .enter().append("rect")
         .attr("class", "bar")
-        .attr("x", d => x(categoryLabels[d.category])) // Use the label mapping for x position
+        .attr("x", d => x(categoryLabels[d.category]))
         .attr("width", x.bandwidth())
-        .attr("y", d => y(d.cat_avg_pm2))
-        .attr("height", d => height - y(d.cat_avg_pm2))
+        .attr("y", d => y(activeMetric === 'pm2.5' ? d.cat_avg_pm2 : d.cat_avg_pm10))
+        .attr("height", d => height - y(activeMetric === 'pm2.5' ? d.cat_avg_pm2 : d.cat_avg_pm10))
         .attr("fill", d => {
-            // Color based on the category
             switch(d.category) {
                 case "red": return "#d62728";
                 case "orange": return "#ff7f0e";
@@ -779,7 +766,6 @@ function calculateCountyGraph(data_sensor) {
     // Clear existing SVG content
     d3.select("#my_dataviz svg").remove();
 
-    // Use the first entry for each county as all entries within a county have the same cat_avg_pm2 value
     let uniqueCountyData = Array.from(new Set(data_sensor.map(item => item.county)))
         .map(county => {
             let firstEntryInCounty = data_sensor.find(item => item.county === county);
@@ -791,7 +777,6 @@ function calculateCountyGraph(data_sensor) {
         });
 
     var data = uniqueCountyData;
-    console.log(uniqueCountyData);
 
     var margin = {top: 40, right: 40, bottom: 50, left: 40},
         width = 320 - margin.left - margin.right,
@@ -804,16 +789,13 @@ function calculateCountyGraph(data_sensor) {
       .append("g")
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
     
-    // Adding the title
     svg.append("text")
         .attr("x", (width / 2))
-        .attr("y", 0 - (margin.top / 2)) // Positioning the title at the top with some margin
+        .attr("y", 0 - (margin.top / 2))
         .attr("text-anchor", "middle")
         .style("font-size", "16px")
-        .style("text-decoration", "underline")
-        .text("AQ Average at County Level");
+        .text(`${activeMetric}  Average at County Level`);
 
-    // X axis
     var x = d3.scaleBand()
       .range([0, width])
       .domain(data.map(d => d.county))
@@ -825,35 +807,34 @@ function calculateCountyGraph(data_sensor) {
         .attr("transform", "translate(14,0)rotate(0)")
         .style("text-anchor", "end");
 
-    // Add Y axis
+    var yDomain = activeMetric === 'pm2.5' ? d3.max(data, d => d.county_avg_pm2) : d3.max(data, d => d.county_avg_pm10);
     var y = d3.scaleLinear()
-      .domain([0, d3.max(data, d => d.county_avg_pm2)])
+      .domain([0, yDomain])
       .range([height, 0]);
     svg.append("g")
       .call(d3.axisLeft(y));
 
-    // Define colors for the bars
     var color = d3.scaleOrdinal()
       .domain(uniqueCountyData.map(d => d.county))
       .range(d3.schemeSet2);
-
-    // Create the bars
+    console.log(activeMetric)
     svg.selectAll(".bar")
       .data(data)
       .enter().append("rect")
         .attr("class", "bar")
         .attr("x", d => x(d.county))
         .attr("width", x.bandwidth())
-        .attr("y", d => y(d.county_avg_pm2))
-        .attr("height", d => height - y(d.county_avg_pm2))
+        .attr("y", d => y(activeMetric === 'pm2.5' ? d.county_avg_pm2 : d.county_avg_pm10))
+        .attr("height", d => height - y(activeMetric === 'pm2.5' ? d.county_avg_pm2 : d.county_avg_pm10))
         .attr("fill", (d) => {
             switch(d.county) {
                 case "Salt Lake County": return "#66cc99";
                 case "Weber County": return "#ff9966";
-                default: return "#9999cc"; // Default color for other counties
+                default: return "#9999cc";
             }
         });
 }
+
 
 function updateGraph(graphType) {
     // Determine the URL based on graph type
@@ -891,3 +872,85 @@ document.getElementById('countyGraphButton').addEventListener('click', function(
     updateGraph('county');
 });
 
+document.addEventListener('DOMContentLoaded', function() {
+    // Function to toggle button states
+    function toggleButtonStates(buttonId) {
+        const button1 = document.getElementById('toggleButton1');
+        const button2 = document.getElementById('toggleButton2');
+        
+        if (buttonId === 'toggleButton1') {
+            button1.classList.add('btn-primary'); // Turn this button on
+            button2.classList.remove('btn-primary'); // Turn the other button off
+            button1.classList.remove('btn-info');
+            button2.classList.add('btn-info');
+        } else if (buttonId === 'toggleButton2') {
+            button2.classList.add('btn-primary'); // Turn this button on
+            button1.classList.remove('btn-primary'); // Turn the other button off
+            button2.classList.remove('btn-info');
+            button1.classList.add('btn-info');
+        }
+    }
+
+    // Add event listeners to the buttons
+    
+    document.getElementById('toggleButton1').addEventListener('click', function() {
+        activeMetric = 'pm2.5';
+        toggleButtonStates('toggleButton1');
+        updateGraph(currentGraphType);
+        updateAllMarkerContents();
+        document.getElementById('sensorTitle').innerHTML = `<h4>${activeMetric} Levels <span style="font-size: smaller;">(between ${startDate} and ${endDate}</span>)</h4>`;
+        // Assume calculateCountyGraph is called with the data when the button is pressed
+    });
+
+    document.getElementById('toggleButton2').addEventListener('click', function() {
+        activeMetric = 'pm10';
+        toggleButtonStates('toggleButton2');
+        updateGraph(currentGraphType);
+        updateAllMarkerContents();
+        document.getElementById('sensorTitle').innerHTML = `<h4>${activeMetric} Levels <span style="font-size: smaller;">(between ${startDate} and ${endDate}</span>)</h4>`;
+        // Assume calculateCountyGraph is called with the data when the button is pressed
+    });
+});
+
+function updateAllMarkerContents() {
+    Object.keys(markersByColor).forEach(colorKey => {
+        markersByColor[colorKey].forEach(marker => {
+            let sensor = marker.sensorData; // Retrieve the stored sensor data
+            let displayValue = activeMetric === 'pm2.5' ? sensor.avg_pm2 : sensor.avg_pm10;
+            let displayValueRounded = Math.round(displayValue);
+            // Construct the new HTML content for the marker
+            var htmlContent = `<div class='custom-icon'>` +
+                              `<img src="static/js/pin.png" style="width:46.2px; height:53.2px;">` +
+                              `<span class='sensor-value'>${displayValueRounded}</span>` +
+                              `</div>`;
+
+            // Update the marker's icon
+            var customIcon = L.divIcon({
+                html: htmlContent,
+                className: '',
+                iconSize: [46.2, 53.2],
+                iconAnchor: [16.5, 37],
+                popupAnchor: [0, -38]
+            });
+
+            marker.setIcon(customIcon);
+
+            // Optionally, update the popup content as well
+            marker.bindPopup(`<b>Sensor ID:</b> ${sensor.sensor_id}<br><b>${activeMetric.toUpperCase()} Value:</b> ${displayValueRounded}`);
+        });
+    });
+}
+
+// On Load
+document.addEventListener('DOMContentLoaded', function() {
+    // Trigger click event on the first toggle button to activate PM2.5 on page load
+    document.getElementById('toggleButton1').click();
+});
+
+function formatDateString(dateString) {
+    const date = new Date(dateString);
+    let month = (date.getMonth() + 1).toString().padStart(2, '0'); // getMonth() is zero-based
+    let day = date.getDate().toString().padStart(2, '0');
+    let year = date.getFullYear();
+    return `${month}-${day}-${year}`;
+}
