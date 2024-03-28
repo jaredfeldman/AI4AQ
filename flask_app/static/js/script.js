@@ -118,7 +118,7 @@ function updateSensors(startDate, endDate, map) {
         .then(data_sensor => {
             addSensorMarkers(data_sensor, map);
             calculateBarGraph(data_sensor);
-            document.getElementById('sensorTitle').innerHTML = `<h4>${activeMetric} Levels <span style="font-size: smaller;">(between ${startDate} and ${endDate}</span>)</h4>`;
+            document.getElementById('sensorTitle').innerHTML = `<h4>${activeMetric} Levels <span style="font-size: smaller;">(between ${formatDateString(startDate)} and ${formatDateString(endDate)}</span>)</h4>`;
 ;
         })
         .catch(error => console.error('Error fetching sensor data:', error));
@@ -898,7 +898,7 @@ document.addEventListener('DOMContentLoaded', function() {
         toggleButtonStates('toggleButton1');
         updateGraph(currentGraphType);
         updateAllMarkerContents();
-        document.getElementById('sensorTitle').innerHTML = `<h4>${activeMetric} Levels <span style="font-size: smaller;">(between ${startDate} and ${endDate}</span>)</h4>`;
+        document.getElementById('sensorTitle').innerHTML = `<h4>${activeMetric} Levels <span style="font-size: smaller;">(between ${formatDateString(startDate)} and ${formatDateString(endDate)}</span>)</h4>`;
         // Assume calculateCountyGraph is called with the data when the button is pressed
     });
 
@@ -907,7 +907,7 @@ document.addEventListener('DOMContentLoaded', function() {
         toggleButtonStates('toggleButton2');
         updateGraph(currentGraphType);
         updateAllMarkerContents();
-        document.getElementById('sensorTitle').innerHTML = `<h4>${activeMetric} Levels <span style="font-size: smaller;">(between ${startDate} and ${endDate}</span>)</h4>`;
+        document.getElementById('sensorTitle').innerHTML = `<h4>${activeMetric} Levels <span style="font-size: smaller;">(between ${formatDateString(startDate)} and ${formatDateString(endDate)}</span>)</h4>`;
         // Assume calculateCountyGraph is called with the data when the button is pressed
     });
 });

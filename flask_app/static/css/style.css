@@ -29,6 +29,8 @@ header {
     text-decoration: none;
     text-transform: uppercase;
     font-size: 16px;
+    left: 20px;
+    top: 10px;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -40,7 +42,7 @@ h1, h2, h3, h4, h5, h6 {
     display: flex;
     flex-direction: row;
     height: 100vh; /* Adjust height based on header's height */
-    padding-top: 210px;
+    padding-top: 245px;
 }
 
 .map-container {
@@ -57,7 +59,7 @@ h1, h2, h3, h4, h5, h6 {
 #my_dataviz {
     position: fixed;
     right: 20px; /* Right side of the screen */
-    bottom: 180px; /* Up from the bottom */
+    bottom: 140px; /* Up from the bottom */
     width: 300px;
     height: 320px;
     background-color: rgba(255, 255, 255, 0.8); 
@@ -70,10 +72,10 @@ h1, h2, h3, h4, h5, h6 {
 #my_dataviz_buttons{
     position: fixed;
     right: 20px; /* Right side of the screen */
-    top: 760px; /* Up from the bottom */
+    top: 800px; /* Up from the bottom */
     width: 300px;
     height: 40px;
-    border-radius: 8px; 
+    border-radius: 8px;
     z-index: 1000; /* Ensure it appears above the map */
     
 }
@@ -86,16 +88,38 @@ h1, h2, h3, h4, h5, h6 {
     z-index: 1000;
 }
 
+/* Style for the button group container */
 #pmButtons {
     position: fixed;
-    right: 560px; /* Right side of the screen */
-    top: 245px; /* Up from the bottom */
-    width: 100px;
-    height: 40px;
-    border-radius: 8px;
+    right: 555px; /* Right side of the screen */
+    top: 280px; /* Up from the bottom */
     z-index: 1000;
-    
+    width: 100px;
 }
+
+/* Style for the buttons inside the button group */
+#pmButtons .btn {
+    border-radius: 0; /* Remove border-radius */
+    margin: 0; /* Remove margins */
+    border: none; /* Optional: remove borders */
+}
+
+/* Optional: if you want to keep the border but remove space, you might need to overlap the borders */
+#pmButtons .btn + .btn {
+    margin-left: -10px; /* Overlap borders */
+}
+
+/* Optional: Adjust the first and last button to have rounded corners if desired */
+#pmButtons .btn:first-child {
+    border-top-left-radius: 0px;
+    border-bottom-left-radius: 0px;
+}
+
+#pmButtons .btn:last-child {
+    border-top-right-radius: 0px;
+    border-bottom-right-radius: 0px;
+}
+
 
 .leaflet-control-container { position: absolute; right: 56px }
 
@@ -108,8 +132,8 @@ h1, h2, h3, h4, h5, h6 {
 
 #slider-button-container {
     position: fixed;
-    bottom: 20px;
-    left: 60px;
+    bottom: 5px;
+    left: 20px;
     display: flex;
     width: 90%;
     align-items: center; /* This ensure vertical alignment */
@@ -118,11 +142,12 @@ h1, h2, h3, h4, h5, h6 {
 
 #date-slider {
     flex-grow: 1; /* Slider takes up as much space as possible */
-    margin-right: 20px; /* Spacing between slider and button */
+    margin-right: 30px; /* Spacing between slider and button */
+    bottom: 0px;
 }
 
 #updateSensorsButton {
-    
+    width: 100px;
 }
 
 #colored-bar {
@@ -173,7 +198,7 @@ h1, h2, h3, h4, h5, h6 {
     height: 100%; /* Full height */
     position: fixed;
     top: 0; /* Align to the top */
-    left: -280px; /* Initially hide the sidebar off-screen to the left */
+    left: -3000px; /* Initially hide the sidebar off-screen to the left */
     background-color: white;
     z-index: 900;
     transition: left 0.5s; /* Smooth transition for sliding effect */
@@ -208,7 +233,7 @@ h1, h2, h3, h4, h5, h6 {
 
 #title-adjust {
     position: relative;
-    top: -20px; /* Move up */
+    top: 4px; /* Move up */
 }
 
 
@@ -248,7 +273,7 @@ h1, h2, h3, h4, h5, h6 {
 
 #colorToggle {
     position: fixed;
-    top: 150px;
+    top: 200px;
     left: 100px;
     display: flex;
     width: 70px;
@@ -257,7 +282,7 @@ h1, h2, h3, h4, h5, h6 {
 
 #toggle {
     position: fixed;
-    top: 150px;
+    top: 200px;
     left: 10px;
     display: flex;
     width: 80px;
