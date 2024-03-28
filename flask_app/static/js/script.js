@@ -240,12 +240,12 @@ function highlightFeature(e) {
 
     // Update info panel with properties
     var properties = layer.feature.properties;
-    document.getElementById('info').innerHTML = 'Census Tract: ' + properties.Tract + '<br>Low Income: ' + properties.Low + '<br>Low/Moderate Income: ' + properties.Lowmod + '<br>Low/Mod Percentage: ' + properties.Lowmod_pct;
+    document.getElementById('info').innerHTML = '<b>Census Tract:</b> ' + properties.Tract + '<br><b>Low Income:</b> ' + properties.Low + '<br><b>Low/Moderate Income:</b> ' + properties.Lowmod + '<br><b>Low/Mod Percentage:</b> ' + properties.Lowmod_pct;
 }
 
 function resetHighlight(e) {
     geojsonLayer.resetStyle(e.target);
-    document.getElementById('info').innerHTML = 'Census Tract: ' + '<br>Low Income: ' + '<br>Low/Moderate Income: ' +  '<br>Low/Mod Percentage: '
+    document.getElementById('info').innerHTML = '<b>Census Tract:</b> ' + '<br><b>Low Income:</b> ' + '<br><b>Low/Moderate Income:</b> ' +  '<br><b>Low/Mod Percentage:</b> '
 }
 
 function onEachFeature(feature, layer) {

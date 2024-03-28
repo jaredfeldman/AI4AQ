@@ -76,9 +76,9 @@
             <!-- Existing Header Content -->
         <!-- Toggler Button -->
 
-          <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#sidebar" aria-expanded="false" aria-controls="sidebar" onclick="toggleSidebar()" id = "toggle">Sidebar</button>
+          <button class="btn btn-secondary" type="button" data-toggle="collapse" data-target="#sidebar" aria-expanded="false" aria-controls="sidebar" onclick="toggleSidebar()" id = "toggle">Sidebar</button>
 
-          <button class="btn btn-primary" type="button" id="colorToggle">Colors</button>
+          <button class="btn btn-secondary" type="button" id="colorToggle">Colors</button>
           <!-- Background image -->
           <div class="p-5 text-center bg-image" style="
               height: 160px;
@@ -124,7 +124,11 @@
                 
                 <!--Buttons PM-->
                 <!-- Additional Toggle Buttons -->
+                
                 <div class="btn-group mt-2" role="group" aria-label="Toggle button group" id="pmButtons">
+                    <button id="toggleButtonPM" class="btn btn-info">pm</button>
+                    <button id="toggleButtonPM2" class="btn btn-info">County</button>
+                    <button id="toggleButtonPM3" class="btn btn-info">Income Level</button>
                     <button id="toggleButton1" class="btn btn-info">2.5</button>
                     <button id="toggleButton2" class="btn btn-info">10</button>
                 </div>
@@ -150,6 +154,7 @@
                 <div id="slider-button-container">
                     <div id="date-slider"></div>
                     <button id="updateSensorsButton">Date Range</button>
+                    <button id="updateSensorsButton">Today</button>
                 </div>
 
 
