@@ -8,7 +8,8 @@ let showColors = true;
 let currentGraphType = 'category'; // Default to category graph
 var activeMetric = 'pm2.5'; // This can be 'pm2.5' or 'pm10'
 
-
+// Global array to store all centroid markers for easy access
+var centroidMarkers = [];
 
 // store markers by color
 var markersByColor = {
@@ -422,7 +423,7 @@ function loadCentroidData(callback) {
 }
 
 function getCentroidForObjectID(objectID) {
-
+    
     const feature = centroidData.features.find(f => f.properties.OBJECTID === objectID);
 
     if (feature && feature.geometry && feature.geometry.coordinates) {
@@ -436,39 +437,88 @@ function getCentroidForObjectID(objectID) {
 }
 
 
+// Global array to store all centroid markers for easy access
+var centroidMarkers = [];
+
 function onEachFeature(feature, layer, map) {
     layer.on({
         mouseover: highlightFeature,
         mouseout: resetHighlight,
         click: function(e) {
             const centroid = getCentroidForObjectID(feature.properties.OBJECTID);
-            if (centroid) {
-                const latLng = new L.LatLng(centroid[1], centroid[0]); // Use the coordinates directly
-                const marker = L.marker(latLng, {icon: greenIcon}).addTo(map);
-
-                console.log(activeMetric)
-                // API call to fetch pollution data
+            if ((centroid) && (document.getElementById('singleDate').checked)) {
                 fetch(`/api/predict?lat=${centroid[1]}&lng=${centroid[0]}`)
-                .then(response => response.json()) // Convert the response to JSON
+                .then(response => response.json())
                 .then(data => {
+                    const pm25Value = data[0];
+                    const pm10Value = data[1];
 
-                    const pm25Value = data[0]; // Adjusted to use the list index
-                    const pm10Value = data[1]; // Adjusted to use the list index
-                    
-                    let popupContent;
-                    if (activeMetric === 'pm2.5') {
-                        popupContent = `<b>Sensor ID:</b> ${feature.properties.OBJECTID}<br><b>PM2.5 Value:</b> ${pm25Value}`;
-                    } else { // if activeMetric is 'pm10'
-                        popupContent = `<b>Sensor ID:</b> ${feature.properties.OBJECTID}<br><b>PM10 Value:</b> ${pm10Value}`;
-                    }
-                    
-                    marker.bindPopup(popupContent).openPopup();
+                    // Assuming `activeMetric` holds the current metric ('pm2.5' or 'pm10')
+                    const displayValue = activeMetric === 'pm2.5' ? pm25Value : pm10Value;
+
+                    var htmlContent = `<div class='custom-icon'>` +
+                                      `<img src="static/js/pinAdded.png" style="width:46.2px; height:53.2px;">` +
+                                      `<span class='sensor-value'>${displayValue}</span>` +
+                                      `</div>`;
+
+                    var customIcon = L.divIcon({
+                        html: htmlContent,
+                        className: '',
+                        iconSize: [46.2, 53.2],
+                        iconAnchor: [16.5, 37],
+                        popupAnchor: [0, -38]
+                    });
+
+                    const marker = L.marker([centroid[1], centroid[0]], {icon: customIcon}).addTo(map);
+                    marker.bindPopup(`<b>Sensor ID:</b> ${feature.properties.OBJECTID}<br>` +
+                                     `<b>PM2.5 Value:</b> ${pm25Value}<br>` +
+                                     `<b>PM10 Value:</b> ${pm10Value}`);
+
+                    // Store PM values and OBJECTID in the marker for future reference
+                    marker.sensorData = {
+                        objectID: feature.properties.OBJECTID,
+                        pm25: pm25Value,
+                        pm10: pm10Value
+                    };
+
+                    // Add marker to global array
+                    centroidMarkers.push(marker);
                 })
                 .catch(error => console.error('Error fetching prediction data:', error));
             }
         }
     });
 }
+
+function updateCentroidMarkerContents() {
+    centroidMarkers.forEach(marker => {
+        const sensorData = marker.sensorData;
+        const displayValue = activeMetric === 'pm2.5' ? sensorData.pm25 : sensorData.pm10;
+
+        var htmlContent = `<div class='custom-icon'>` +
+                          `<img src="static/js/pinAdded.png" style="width:46.2px; height:53.2px;">` +
+                          `<span class='sensor-value'>${displayValue}</span>` +
+                          `</div>`;
+
+        var customIcon = L.divIcon({
+            html: htmlContent,
+            className: '',
+            iconSize: [46.2, 53.2],
+            iconAnchor: [16.5, 37],
+            popupAnchor: [0, -38]
+        });
+
+        marker.setIcon(customIcon);
+
+        // Optionally update the popup content as well
+        let popupContent = `<b>Sensor ID:</b> ${sensorData.objectID}<br>` +
+                           `<b>PM2.5 Value:</b> ${sensorData.pm25}<br>` +
+                           `<b>PM10 Value:</b> ${sensorData.pm10}`;
+        marker.setPopupContent(popupContent);
+    });
+}
+
+
 
 
 
@@ -874,6 +924,7 @@ document.addEventListener('DOMContentLoaded', function() {
         toggleButtonStates('toggleButton1');
         updateGraph(currentGraphType);
         updateAllMarkerContents();
+        updateCentroidMarkerContents();
         document.getElementById('sensorTitle').innerHTML = `<h4>${activeMetric} Levels <span style="font-size: smaller;">(between ${formatDateString(startDate)} and ${formatDateString(endDate)}</span>)</h4>`;
         // Assume calculateCountyGraph is called with the data when the button is pressed
     });
@@ -883,6 +934,7 @@ document.addEventListener('DOMContentLoaded', function() {
         toggleButtonStates('toggleButton2');
         updateGraph(currentGraphType);
         updateAllMarkerContents();
+        updateCentroidMarkerContents();
         document.getElementById('sensorTitle').innerHTML = `<h4>${activeMetric} Levels <span style="font-size: smaller;">(between ${formatDateString(startDate)} and ${formatDateString(endDate)}</span>)</h4>`;
         // Assume calculateCountyGraph is called with the data when the button is pressed
     });
