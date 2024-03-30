@@ -75,6 +75,22 @@ def get_latest_county():
         traceback_str = ''.join(traceback.format_exception(etype=type(e), value=e, tb=e.__traceback__))
         app.logger.error(f"Error: {traceback_str}")
         return jsonify({"error": "Internal Server Error"}), 500
+        
+@app.route("/api/sensor_linear", methods=["GET"])
+def get_sensor_linear():
+    try:
+        # Retrieve query parameters
+        begin_date = request.args.get('begin_date')
+        end_date = request.args.get('end_date')
+        
+        # Fetching the color states
+        sensor = request.args.get('sensor')
+        
+        return summary_s.sensor_linear(begin_date, end_date, sensor).to_json(orient='records')
+    except Exception as e:
+        traceback_str = ''.join(traceback.format_exception(etype=type(e), value=e, tb=e.__traceback__))
+        app.logger.error(f"Error: {traceback_str}")
+        return jsonify({"error": "Internal Server Error"}), 500
     
 # Gets all dates and orders them for the date selection tool
 @app.route("/api/date_range", methods=["GET"])
@@ -82,6 +98,9 @@ def get_date_range():
 
     # Pass the dates to function
     return pd.read_csv('static/data/date_range.csv').to_json(orient='records')
+    
+    
+    
 
 
 if __name__=="__main__":

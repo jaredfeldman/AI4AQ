@@ -126,6 +126,23 @@ def return_county(begin_date, end_date,red,orange,green,lightBlue,salt,web,dav):
     connection.close()
     return df
     
+
+def sensor_linear(begin_date,end_date, the_sensor):
+    connection = sqlite3.connect('static/data/sensors_readings_2016_present.db')
+    
+    # Assemble Query
+    sql_query = """
+    SELECT pm2
+    FROM sensors_readings
+    where (date(date) between ? and ?) and (sensor_id = ?)
+    """
+    
+    #df = pd.read_sql_query(sql_query, connection, params=(begin_date, end_date))
+    df = pd.read_sql_query(sql_query, connection, params=(begin_date,end_date,the_sensor))
+    connection.close()
+    
+    return df
+
     
 
 

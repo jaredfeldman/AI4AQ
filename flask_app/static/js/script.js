@@ -92,21 +92,56 @@ function fetchDateRangeAndInitializeSlider(map) {
         .catch(error => console.error('Error fetching date range:', error));
 }
 
+let dateArray = []; // Declare dateArray at a higher scope
+
+function fetchDateRangeAndInitializeSlider(map) {
+    fetch('/api/date_range')
+        .then(response => response.json())
+        .then(data => {
+            dateArray = data.map(item => item.date); // Update the global dateArray
+            initializeDateSlider(dateArray, map);
+            document.getElementById('updateSensorsButton').click();
+        })
+        .catch(error => console.error('Error fetching date range:', error));
+}
+
 function initializeDateSlider(dateArray, map) {
-    // Initialize the dateSlider inside this function but use the global variable
     dateSlider = document.getElementById('date-slider');
+    if (document.getElementById('singleDate').checked) {
+        initializeSingleDateSlider(dateArray);
+    } else {
+        initializeDateRangeSlider(dateArray);
+    }
+}
+
+function initializeSingleDateSlider(dateArray) {
     noUiSlider.create(dateSlider, {
         range: { 'min': 0, 'max': dateArray.length - 1 },
-        start: [0, dateArray.length - 1],
+        start: dateArray.length - 1, // Single value for single date selection
         connect: true,
-        step: 1,
         tooltips: true,
+        step: 1,
         format: {
             to: value => dateArray[Math.round(value)],
             from: value => value
         }
     });
 }
+
+function initializeDateRangeSlider(dateArray) {
+    noUiSlider.create(dateSlider, {
+        range: { 'min': 0, 'max': dateArray.length - 1 },
+        start: [0, dateArray.length - 1], // Start and end for range selection
+        connect: true,
+        tooltips: true,
+        step: 1,
+        format: {
+            to: value => dateArray[Math.round(value)],
+            from: value => value
+        }
+    });
+}
+
 
 function updateSensors(startDate, endDate, map) {
     clearMarkers();
@@ -954,3 +989,23 @@ function formatDateString(dateString) {
     let year = date.getFullYear();
     return `${month}-${day}-${year}`;
 }
+
+document.getElementById('getTodayAir').addEventListener('click', function() {
+    console.log('poop')
+});
+
+
+document.getElementById('singleDate').addEventListener('change', function() {
+    if (this.checked) {
+        dateSlider.noUiSlider.destroy(); // Destroy current slider instance
+        initializeSingleDateSlider(dateArray); // Assume dateArray is globally accessible or fetch it as needed
+    }
+});
+
+document.getElementById('dateRange').addEventListener('change', function() {
+    if (this.checked) {
+        dateSlider.noUiSlider.destroy(); // Destroy current slider instance
+        initializeDateRangeSlider(dateArray); // Assume dateArray is globally accessible or fetch it as needed
+    }
+});
+
