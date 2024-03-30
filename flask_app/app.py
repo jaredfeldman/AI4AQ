@@ -99,7 +99,12 @@ def get_date_range():
     # Pass the dates to function
     return pd.read_csv('static/data/date_range.csv').to_json(orient='records')
     
-    
+# Gets all dates and orders them for the date selection tool
+@app.route("/api/predict", methods=["GET"])
+def predict_AQ():
+    values = [10, 15]
+    # Directly return the list as a JSON response
+    return jsonify(values)
     
 
 

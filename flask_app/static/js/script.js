@@ -36,19 +36,14 @@ let colorStates = {
     dav: true, // New
 };
 
-
-//    turq: true, //#66cc99
-//    lightorange: true, //#ff9966
-//    purple: true //#9999cc
-
-
-
 // Declare geojson layer variable globally
 var geojsonLayer;
 var centroidData;
 
 var map; // Declare `map` globally
 var dateSlider;
+
+let dateArray = [];
 
 document.addEventListener('DOMContentLoaded', function() {
     map = initializeMap();
@@ -77,22 +72,6 @@ function initializeMap() {
     return map;
 }
 
-function fetchDateRangeAndInitializeSlider(map) {
-    fetch('/api/date_range')
-        .then(response => response.json())
-        .then(data => {
-            var dateArray = data.map(item => item.date);
-            initializeDateSlider(dateArray, map);
-            //document.addEventListener('DOMContentLoaded', function() {
-            //    // Trigger click event on the first toggle button to activate PM2.5 on page load
-        // Load sensors on start -- want to change this to present
-        document.getElementById('updateSensorsButton').click();
-            //});
-        })
-        .catch(error => console.error('Error fetching date range:', error));
-}
-
-let dateArray = []; // Declare dateArray at a higher scope
 
 function fetchDateRangeAndInitializeSlider(map) {
     fetch('/api/date_range')
@@ -143,11 +122,14 @@ function initializeDateRangeSlider(dateArray) {
 }
 
 
+// ------------------------ UPDATE/ADD SENSORS ----------------------------------------
+
 function updateSensors(startDate, endDate, map) {
     clearMarkers();
     
     const url = `/api/summary_sensor?begin_date=${startDate}&end_date=${endDate}&red=${colorStates.red}&orange=${colorStates.orange}&green=${colorStates.green}&lightBlue=${colorStates.lightBlue}&salt=${colorStates.salt}&web=${colorStates.web}&dav=${colorStates.dav}`;
-
+    console.log(startDate)
+    console.log(endDate)
     fetch(url)
         .then(response => response.json())
         .then(data_sensor => {
@@ -158,7 +140,6 @@ function updateSensors(startDate, endDate, map) {
         })
         .catch(error => console.error('Error fetching sensor data:', error));
 }
-
 
 
 function addSensorMarkers(data_sensor, map) {
@@ -213,8 +194,6 @@ function addSensorMarkers(data_sensor, map) {
 }
 
 
-
-
 function clearMarkers() {
     // Clear markers from each category
     Object.values(markersByColor).forEach(markersArray => {
@@ -225,315 +204,6 @@ function clearMarkers() {
     allMarkers.forEach(marker => marker.remove());
     allMarkers.length = 0;
 }
-
-
-
-// Function to get color based on lowmod_pct
-    
-function getColor(lowmod_pct) {
-    if (!showColors) {
-        return 'gray';
-    }
-    
-    if (lowmod_pct > 0.75) {
-        return 'red';
-    } else if (lowmod_pct > 0.5) {
-        return 'orange';
-    } else if (lowmod_pct > 0.25) {
-        return 'green';
-    } else {
-        return '#33ccff'; // Light blue
-    }
-}
-
-
-
-function style(feature) {
-    return {
-        fillColor: getColor(feature.properties.Lowmod_pct),
-        weight: 4,
-        opacity: 1,
-        color: 'white',  // Default border color
-        dashArray: '3',
-        fillOpacity: showColors ? 0.6 : 0.4
-    };
-}
-
-function highlightFeature(e) {
-    var layer = e.target;
-
-    layer.setStyle({
-        weight: 5,
-        color: 'green',
-        dashArray: '',
-        fillOpacity: 0.7
-    });
-
-    if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
-        layer.bringToFront();
-    }
-
-    // Update info panel with properties
-    var properties = layer.feature.properties;
-    document.getElementById('info').innerHTML = '<b>Census Tract:</b> ' + properties.Tract + '<br><b>Low Income:</b> ' + properties.Low + '<br><b>Low/Moderate Income:</b> ' + properties.Lowmod + '<br><b>Low/Mod Percentage:</b> ' + properties.Lowmod_pct;
-}
-
-function resetHighlight(e) {
-    geojsonLayer.resetStyle(e.target);
-    document.getElementById('info').innerHTML = '<b>Census Tract:</b> ' + '<br><b>Low Income:</b> ' + '<br><b>Low/Moderate Income:</b> ' +  '<br><b>Low/Mod Percentage:</b> '
-}
-
-function onEachFeature(feature, layer) {
-    layer.on({
-        mouseover: highlightFeature,
-        mouseout: resetHighlight
-    });
-}
-
-function loadGeoJSONLayer(map) {
-    fetch('/static/data/converted_geojson_data.geojson')
-        .then(response => response.json())
-        .then(data => {
-            geojsonLayer = L.geoJson(data, {
-                style: style,
-                onEachFeature: function(feature, layer) {
-                    // Now pass `map` as the third argument
-                    onEachFeature(feature, layer, map);
-                }
-            }).addTo(map);
-        });
-}
-
-    
-
-function calculateBarGraph(data_sensor) {
-    // Clear existing SVG content
-    d3.select("#my_dataviz svg").remove();
-
-    let categories = [...new Set(data_sensor.map(item => item.category))];
-    let firstCatAvgs = [];
-
-    categories.forEach(category => {
-        let firstEntry = data_sensor.find(item => item.category === category);
-        if (firstEntry) {
-            firstCatAvgs.push({
-                category: category,
-                cat_avg_pm2: firstEntry.cat_avg_pm2,
-                cat_avg_pm10: firstEntry.cat_avg_pm10
-            });
-        }
-    });
-
-    var data = firstCatAvgs;
-    
-
-    var margin = {top: 20, right: 30, bottom: 40, left: 40},
-        width = 300 - margin.left - margin.right,
-        height = 300 - margin.top - margin.bottom;
-
-    var svg = d3.select("#my_dataviz")
-      .append("svg")
-        .attr("width", width + margin.left + margin.right)
-        .attr("height", height + margin.top + margin.bottom)
-      .append("g")
-        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-    
-    // Adding the title
-    svg.append("text")
-        .attr("x", (width / 2))
-        .attr("y", 0 - (margin.top / 2)) // Positioning the title at the top with some margin
-        .attr("text-anchor", "middle")  // This ensures the text is centered at the given x position
-        .style("font-size", "16px")
-        .text("");
-
-    // X axis
-    var x = d3.scaleBand()
-      .range([0, width])
-      .domain(data.map(function(d) { return d.category; })) // Use 'category' instead of 'Country'
-      .padding(0.2);
-    svg.append("g")
-      .attr("transform", "translate(0," + height + ")")
-      .call(d3.axisBottom(x))
-      .selectAll("text")
-        .attr("transform", "translate(-10,0)rotate(-45)")
-        .style("text-anchor", "end");
-
-    // Add Y axis
-    var y = d3.scaleLinear()
-      .domain([0, d3.max(data, function(d) { return d.cat_avg_pm2; })]) // Use 'cat_avg_pm2'
-      .range([height, 0]);
-    svg.append("g")
-      .call(d3.axisLeft(y));
-
-    var color = d3.scaleOrdinal()
-      .domain(categories)
-      .range(d3.schemeSet2);
-
-    svg.selectAll(".bar")
-      .data(data)
-      .enter().append("rect")
-        .attr("class", "bar")
-        .attr("x", d => x(d.category)) // Position based on category
-        .attr("width", x.bandwidth()) // Width as determined by scaleBand
-        .attr("y", d => y(d.cat_avg_pm2)) // Y position based on cat_avg_pm2
-        .attr("height", d => height - y(d.cat_avg_pm2)) // Height based on scale
-        .attr("fill", function(d, i) {
-            // Set fill color based on category
-            // replace colors or a color scale function
-            switch(d.category) {
-                case "red": return "#d62728";
-                case "orange": return "#ff7f0e";
-                case "green": return "#2ca02c";
-                default: return "#33ccff"; // Default color
-            }
-        });
-}
-
-// Function to toggle the sidebar
-function toggleSidebar() {
-    var sidebar = document.getElementById("sidebar");
-    sidebar.classList.toggle("active");
-}
-
-var greenIcon = L.icon({
-    iconUrl: 'static/js/pin.png',
-    //shadowUrl: 'static/js/shadow.png',
-
-    iconSize:     [30, 30], // size of the icon
-    //shadowSize:   [100, 100], // size of the shadow
-    iconAnchor:   [4, 8], // point of the icon which will correspond to marker's location
-    //shadowAnchor: [50, 96],  // the same for the shadow
-    popupAnchor:  [-3, -96] // point from which the popup should open relative to the iconAnchor
-});
-
-
-
-// Function to load centroids
-function loadCentroidData(callback) {
-    fetch('/static/data/centroids_data.geojson')
-    .then(response => response.json())
-    .then(data => {
-        centroidData = data;
-        if (typeof callback === "function") {
-            callback(); // Call the callback function if it's provided
-        }
-    });
-}
-
-function getCentroidForObjectID(objectID) {
-
-    const feature = centroidData.features.find(f => f.properties.OBJECTID === objectID);
-
-    if (feature && feature.geometry && feature.geometry.coordinates) {
-        console.log('Geometry Coordinates:', feature.geometry.coordinates);
-        // Since geometry.coordinates is an array [lng, lat]
-        const coords = feature.geometry.coordinates;
-        
-        return coords.length === 2 ? coords : null; // This check ensures that coords is an array with two elements.
-    }
-    return null;
-}
-
-
-function onEachFeature(feature, layer, map) {
-    layer.on({
-        mouseover: highlightFeature,
-        mouseout: resetHighlight,
-        click: function(e) {
-
-            // Find the centroid for the clicked tract
-            const centroid = getCentroidForObjectID(feature.properties.OBJECTID);
-
-            // Inside click event handler
-            if (centroid) {
-                const latLng = new L.LatLng(centroid[1], centroid[0]); // Use the coordinates directly
-                // Create and add the marker
-                L.marker(latLng, {icon: greenIcon}).addTo(map)
-                  .bindPopup(`<b>Sensor ID:</b> ${feature.properties.OBJECTID}<br><b>Info:</b> Additional info here`);
-            }
-
-        }
-    });
-}
-
-document.getElementById('colorToggle').addEventListener('click', function() {
-    showColors = !showColors; // Toggle the state
-
-    updateMapColors();
-});
-
-function updateMapColors() {
-    if (geojsonLayer) {
-        geojsonLayer.eachLayer(function(layer) {
-            var lowmod_pct = layer.feature.properties.Lowmod_pct; // Ensure this matches actual property name
-            var newColor = showColors ? getColor(lowmod_pct) : 'gray'; // Use transparent color if showColors is false
-            layer.setStyle({
-                fillColor: newColor,
-                fillOpacity: showColors ? 0.6 : 0.4,
-                color: 'white', // This is outline color
-                weight: 4, // This is the outline weight
-                opacity: 1, // This controls the opacity of the outline
-                // Keep other styles as they are or adjust as needed
-            });
-        });
-    }
-}
-
-
-function updateButtonStyle(color) {
-    const buttonId = `toggle${color.charAt(0).toUpperCase() + color.slice(1)}`;
-    const button = document.getElementById(buttonId);
-
-    if (colorStates[color]) {
-        button.classList.add("active");
-        button.classList.remove("inactive"); // Ensure this class is removed if it's used
-        // Set button color based on the active state if needed
-    } else {
-        button.classList.remove("active");
-        button.classList.add("inactive"); // Add this class if using it to style inactive buttons
-
-    }
-}
-
-
-
-function toggleColorStateAndRefreshMap(color,theSplitType) {
-    colorStates[color] = !colorStates[color]; // Toggle the state
-    updateButtonStyle(color); // Update the button appearance
-
-    // refresh the map or markers based on this new state, call those functions here
-    toggleMarkersByColor(color, colorStates[color],theSplitType);
-}
-
-
-
-// Function to update dates globally
-function updateDatesFromSlider() {
-    let values = dateSlider.noUiSlider.get();
-    startDate = values[0];
-    endDate = values[1];
-}
-
-// Update sensor data based on current dates and map state
-function refreshSensorData() {
-    // Reset all color buttons to true/pushed state
-    Object.keys(colorStates).forEach(color => {
-        colorStates[color] = true; // Set each color state to true
-        updateButtonStyle(color); // Update button styles to reflect the pushed state
-    });
-
-    updateDatesFromSlider();
-    clearMarkers(); // Clear existing markers before fetching new data
-    updateSensors(startDate, endDate, map); // Fetch and display new sensor data
-}
-
-// Call this function after loading new sensor data:
-document.getElementById('updateSensorsButton').addEventListener('click', function() {
-    resetButtonStates(); // Ensure this is called to reset states as needed
-    refreshSensorData(); // Load new data and refresh UI accordingly
-    
-});
-
 
 function toggleMarkersByColor(color, show,theSplitType) {
     
@@ -611,19 +281,287 @@ function toggleMarkersByColor(color, show,theSplitType) {
     }
 }
 
-//// Function to clear arrays for keys that match a given string
-//function clearArraysForMatch(string) {
-//    // Find matching keys
-//    const matchingKeys = Object.keys(markersByColor).filter(key => key.includes(string));
-//
-//    // Iterate over matching keys and clear their arrays
-//    for (let key of matchingKeys) {
-//        markersByColor[key] = []; // Clear the array
-//    }
-//
-//    // For demonstration, returning the modified object to see the result
-//    return markersByColor;
-//}
+function updateAllMarkerContents() {
+    Object.keys(markersByColor).forEach(colorKey => {
+        markersByColor[colorKey].forEach(marker => {
+            let sensor = marker.sensorData; // Retrieve the stored sensor data
+            let displayValue = activeMetric === 'pm2.5' ? sensor.avg_pm2 : sensor.avg_pm10;
+            let displayValueRounded = Math.round(displayValue);
+            // Construct the new HTML content for the marker
+            var htmlContent = `<div class='custom-icon'>` +
+                              `<img src="static/js/pin.png" style="width:46.2px; height:53.2px;">` +
+                              `<span class='sensor-value'>${displayValueRounded}</span>` +
+                              `</div>`;
+
+            // Update the marker's icon
+            var customIcon = L.divIcon({
+                html: htmlContent,
+                className: '',
+                iconSize: [46.2, 53.2],
+                iconAnchor: [16.5, 37],
+                popupAnchor: [0, -38]
+            });
+
+            marker.setIcon(customIcon);
+
+            // Optionally, update the popup content as well
+            marker.bindPopup(`<b>Sensor ID:</b> ${sensor.sensor_id}<br><b>${activeMetric.toUpperCase()} Value:</b> ${displayValueRounded}`);
+        });
+    });
+}
+
+//------------------------------- ENDish ADD SENSORS -----------------------------
+
+// Function to get color based on lowmod_pct
+    
+function getColor(lowmod_pct) {
+    if (!showColors) {
+        return 'gray';
+    }
+    
+    if (lowmod_pct > 0.75) {
+        return 'red';
+    } else if (lowmod_pct > 0.5) {
+        return 'orange';
+    } else if (lowmod_pct > 0.25) {
+        return 'green';
+    } else {
+        return '#33ccff'; // Light blue
+    }
+}
+
+
+function style(feature) {
+    return {
+        fillColor: getColor(feature.properties.Lowmod_pct),
+        weight: 4,
+        opacity: 1,
+        color: 'white',  // Default border color
+        dashArray: '3',
+        fillOpacity: showColors ? 0.6 : 0.4
+    };
+}
+
+function highlightFeature(e) {
+    var layer = e.target;
+
+    layer.setStyle({
+        weight: 5,
+        color: 'green',
+        dashArray: '',
+        fillOpacity: 0.7
+    });
+
+    if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
+        layer.bringToFront();
+    }
+
+    // Update info panel with properties
+    var properties = layer.feature.properties;
+    document.getElementById('info').innerHTML = '<b>Census Tract:</b> ' + properties.Tract + '<br><b>Low Income:</b> ' + properties.Low + '<br><b>Low/Moderate Income:</b> ' + properties.Lowmod + '<br><b>Low/Mod Percentage:</b> ' + properties.Lowmod_pct;
+}
+
+function resetHighlight(e) {
+    geojsonLayer.resetStyle(e.target);
+    document.getElementById('info').innerHTML = '<b>Census Tract:</b> ' + '<br><b>Low Income:</b> ' + '<br><b>Low/Moderate Income:</b> ' +  '<br><b>Low/Mod Percentage:</b> '
+}
+
+function onEachFeature(feature, layer) {
+    layer.on({
+        mouseover: highlightFeature,
+        mouseout: resetHighlight
+    });
+}
+
+function loadGeoJSONLayer(map) {
+    fetch('/static/data/converted_geojson_data.geojson')
+        .then(response => response.json())
+        .then(data => {
+            geojsonLayer = L.geoJson(data, {
+                style: style,
+                onEachFeature: function(feature, layer) {
+                    // Now pass `map` as the third argument
+                    onEachFeature(feature, layer, map);
+                }
+            }).addTo(map);
+        });
+}
+
+
+
+// Function to toggle the sidebar
+function toggleSidebar() {
+    var sidebar = document.getElementById("sidebar");
+    sidebar.classList.toggle("active");
+}
+
+
+// ------------ CENTROIDS ---------------------------------------
+
+var greenIcon = L.icon({
+    iconUrl: 'static/js/pinAdded.png',
+    //shadowUrl: 'static/js/shadow.png',
+
+    iconSize: [46.2, 53.2],
+    iconAnchor: [16.5, 37], // Adjust on the size of icon
+    popupAnchor: [0, -38] // Adjust to position the popup
+});
+
+
+
+// Function to load centroids
+function loadCentroidData(callback) {
+    fetch('/static/data/centroids_data.geojson')
+    .then(response => response.json())
+    .then(data => {
+        centroidData = data;
+        if (typeof callback === "function") {
+            callback(); // Call the callback function if it's provided
+        }
+    });
+}
+
+function getCentroidForObjectID(objectID) {
+
+    const feature = centroidData.features.find(f => f.properties.OBJECTID === objectID);
+
+    if (feature && feature.geometry && feature.geometry.coordinates) {
+        console.log('Geometry Coordinates:', feature.geometry.coordinates);
+        // Since geometry.coordinates is an array [lng, lat]
+        const coords = feature.geometry.coordinates;
+        
+        return coords.length === 2 ? coords : null; // This check ensures that coords is an array with two elements.
+    }
+    return null;
+}
+
+
+function onEachFeature(feature, layer, map) {
+    layer.on({
+        mouseover: highlightFeature,
+        mouseout: resetHighlight,
+        click: function(e) {
+            const centroid = getCentroidForObjectID(feature.properties.OBJECTID);
+            if (centroid) {
+                const latLng = new L.LatLng(centroid[1], centroid[0]); // Use the coordinates directly
+                const marker = L.marker(latLng, {icon: greenIcon}).addTo(map);
+
+                console.log(activeMetric)
+                // API call to fetch pollution data
+                fetch(`/api/predict?lat=${centroid[1]}&lng=${centroid[0]}`)
+                .then(response => response.json()) // Convert the response to JSON
+                .then(data => {
+
+                    const pm25Value = data[0]; // Adjusted to use the list index
+                    const pm10Value = data[1]; // Adjusted to use the list index
+                    
+                    let popupContent;
+                    if (activeMetric === 'pm2.5') {
+                        popupContent = `<b>Sensor ID:</b> ${feature.properties.OBJECTID}<br><b>PM2.5 Value:</b> ${pm25Value}`;
+                    } else { // if activeMetric is 'pm10'
+                        popupContent = `<b>Sensor ID:</b> ${feature.properties.OBJECTID}<br><b>PM10 Value:</b> ${pm10Value}`;
+                    }
+                    
+                    marker.bindPopup(popupContent).openPopup();
+                })
+                .catch(error => console.error('Error fetching prediction data:', error));
+            }
+        }
+    });
+}
+
+
+
+
+// ------------ END CENTROIDS --------------------------------
+
+document.getElementById('colorToggle').addEventListener('click', function() {
+    showColors = !showColors; // Toggle the state
+
+    updateMapColors();
+});
+
+function updateMapColors() {
+    if (geojsonLayer) {
+        geojsonLayer.eachLayer(function(layer) {
+            var lowmod_pct = layer.feature.properties.Lowmod_pct; // Ensure this matches actual property name
+            var newColor = showColors ? getColor(lowmod_pct) : 'gray'; // Use transparent color if showColors is false
+            layer.setStyle({
+                fillColor: newColor,
+                fillOpacity: showColors ? 0.6 : 0.4,
+                color: 'white', // This is outline color
+                weight: 4, // This is the outline weight
+                opacity: 1, // This controls the opacity of the outline
+                // Keep other styles as they are or adjust as needed
+            });
+        });
+    }
+}
+
+
+function updateButtonStyle(color) {
+    const buttonId = `toggle${color.charAt(0).toUpperCase() + color.slice(1)}`;
+    const button = document.getElementById(buttonId);
+
+    if (colorStates[color]) {
+        button.classList.add("active");
+        button.classList.remove("inactive"); // Ensure this class is removed if it's used
+        // Set button color based on the active state if needed
+    } else {
+        button.classList.remove("active");
+        button.classList.add("inactive"); // Add this class if using it to style inactive buttons
+
+    }
+}
+
+
+
+function toggleColorStateAndRefreshMap(color,theSplitType) {
+    colorStates[color] = !colorStates[color]; // Toggle the state
+    updateButtonStyle(color); // Update the button appearance
+
+    // refresh the map or markers based on this new state, call those functions here
+    toggleMarkersByColor(color, colorStates[color],theSplitType);
+}
+
+
+
+// Function to update dates globally
+function updateDatesFromSlider() {
+    console.log('no?')
+    let values = dateSlider.noUiSlider.get();
+    startDate = values[0];
+    endDate = values[1];
+    console.log(values[0])
+    
+    if (startDate == 2){
+        startDate = values
+        endDate = values
+    };
+}
+
+// Update sensor data based on current dates and map state
+function refreshSensorData() {
+    // Reset all color buttons to true/pushed state
+    Object.keys(colorStates).forEach(color => {
+        colorStates[color] = true; // Set each color state to true
+        updateButtonStyle(color); // Update button styles to reflect the pushed state
+    });
+
+    updateDatesFromSlider();
+    clearMarkers(); // Clear existing markers before fetching new data
+    updateSensors(startDate, endDate, map); // Fetch and display new sensor data
+}
+
+// Call this function after loading new sensor data:
+document.getElementById('updateSensorsButton').addEventListener('click', function() {
+    resetButtonStates(); // Ensure this is called to reset states as needed
+    refreshSensorData(); // Load new data and refresh UI accordingly
+    
+});
+
+
+
 
 
 document.getElementById('toggleRed').addEventListener('click', () => {
@@ -679,6 +617,9 @@ function resetButtonStates() {
     });
 }
 
+
+// BAR GRAPHS ----------------------------------------------
+
 function updateJustGraph() {
     let url;
     if (currentGraphType === 'category') {
@@ -703,8 +644,6 @@ function updateJustGraph() {
         })
         .catch(error => console.error('Error fetching sensor data:', error));
 }
-
-// BAR GRAPHS -------------------------------
 
 function calculateBarGraph(data_sensor) {
     // Clear existing SVG content
@@ -896,6 +835,8 @@ function updateGraph(graphType) {
         .catch(error => console.error('Error fetching sensor data:', error));
 }
 
+//---------------------- END GRAPHS ------------------------
+
 // Add event listeners to buttons
 document.getElementById('categoryGraphButton').addEventListener('click', function() {
     currentGraphType = 'category';
@@ -947,34 +888,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-function updateAllMarkerContents() {
-    Object.keys(markersByColor).forEach(colorKey => {
-        markersByColor[colorKey].forEach(marker => {
-            let sensor = marker.sensorData; // Retrieve the stored sensor data
-            let displayValue = activeMetric === 'pm2.5' ? sensor.avg_pm2 : sensor.avg_pm10;
-            let displayValueRounded = Math.round(displayValue);
-            // Construct the new HTML content for the marker
-            var htmlContent = `<div class='custom-icon'>` +
-                              `<img src="static/js/pin.png" style="width:46.2px; height:53.2px;">` +
-                              `<span class='sensor-value'>${displayValueRounded}</span>` +
-                              `</div>`;
-
-            // Update the marker's icon
-            var customIcon = L.divIcon({
-                html: htmlContent,
-                className: '',
-                iconSize: [46.2, 53.2],
-                iconAnchor: [16.5, 37],
-                popupAnchor: [0, -38]
-            });
-
-            marker.setIcon(customIcon);
-
-            // Optionally, update the popup content as well
-            marker.bindPopup(`<b>Sensor ID:</b> ${sensor.sensor_id}<br><b>${activeMetric.toUpperCase()} Value:</b> ${displayValueRounded}`);
-        });
-    });
-}
 
 // On Load
 document.addEventListener('DOMContentLoaded', function() {
@@ -990,9 +903,7 @@ function formatDateString(dateString) {
     return `${month}-${day}-${year}`;
 }
 
-document.getElementById('getTodayAir').addEventListener('click', function() {
-    console.log('poop')
-});
+
 
 
 document.getElementById('singleDate').addEventListener('change', function() {

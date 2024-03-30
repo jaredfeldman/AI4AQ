@@ -1,8 +1,24 @@
 import pandas as pd
 import sqlite3
-
+from datetime import datetime, timedelta
 
 def return_table(begin_date, end_date,red,orange,green,lightBlue,salt,web,dav):
+
+
+    # Convert strings to datetime objects
+    begin_date_obj = datetime.strptime(begin_date, "%Y-%m-%d")
+    end_date_obj = datetime.strptime(end_date, "%Y-%m-%d")
+
+    # Check if dates are the same
+    if begin_date_obj == end_date_obj:
+        # Move end_date forward by one day
+        end_date_obj += timedelta(days=1)
+
+        # Convert back to string if needed
+        end_date = end_date_obj.strftime("%Y-%m-%d")
+
+    
+    
     # Set up sqlite
     connection = sqlite3.connect('static/data/sensors_readings_2016_present.db')
     
@@ -64,6 +80,20 @@ def return_table(begin_date, end_date,red,orange,green,lightBlue,salt,web,dav):
     
     
 def return_county(begin_date, end_date,red,orange,green,lightBlue,salt,web,dav):
+
+
+    # Convert strings to datetime objects
+    begin_date_obj = datetime.strptime(begin_date, "%Y-%m-%d")
+    end_date_obj = datetime.strptime(end_date, "%Y-%m-%d")
+
+    # Check if dates are the same
+    if begin_date_obj == end_date_obj:
+        # Move end_date forward by one day
+        end_date_obj += timedelta(days=1)
+
+        # Convert back to string if needed
+        end_date = end_date_obj.strftime("%Y-%m-%d")
+
     # Set up sqlite
     connection = sqlite3.connect('static/data/sensors_readings_2016_present.db')
     
@@ -132,9 +162,10 @@ def sensor_linear(begin_date,end_date, the_sensor):
     
     # Assemble Query
     sql_query = """
-    SELECT pm2
+    SELECT date(date) as theDate, pm2
     FROM sensors_readings
     where (date(date) between ? and ?) and (sensor_id = ?)
+    order by date asc
     """
     
     #df = pd.read_sql_query(sql_query, connection, params=(begin_date, end_date))
