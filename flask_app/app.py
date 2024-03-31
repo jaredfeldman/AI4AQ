@@ -107,7 +107,7 @@ def get_date_range():
 
 # Temporarily turn OFF MOdel!!!!!!!!!!!!!!!!!!!!!!!!!!
 # test model
-#model = load_model('static/data/test_model.h5')
+model = load_model('static/data/test_model.h5')
 
 @app.route("/api/predict", methods=["GET"])
 def predict_AQ():
@@ -115,6 +115,8 @@ def predict_AQ():
         # Retrieve values from request and convert them to float
         pm2 = float(request.args.get("avgPM2"))
         pm10 = float(request.args.get("avgPM10"))
+#        lat = float(request.args.get("lat"))
+#        lon = float(request.args.get("lng"))
         
         # Ensure the input_value is shaped correctly
         input_value = np.array([[pm2], [pm10]])  # Shape (1, 2)

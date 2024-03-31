@@ -8,8 +8,6 @@ let showColors = true;
 let currentGraphType = 'category'; // Default to category graph
 var activeMetric = 'pm2.5'; // This can be 'pm2.5' or 'pm10'
 
-// Global array to store all centroid markers for easy access
-var centroidMarkers = [];
 
 // store markers by color
 var markersByColor = {
@@ -78,10 +76,92 @@ function initializeMap() {
     return map;
 }
 
+// Function to get color based on lowmod_pct
+    
+function getColor(lowmod_pct) {
+    if (!showColors) {
+        return 'gray';
+    }
+    
+    if (lowmod_pct > 0.75) {
+        return 'red';
+    } else if (lowmod_pct > 0.5) {
+        return 'orange';
+    } else if (lowmod_pct > 0.25) {
+        return 'green';
+    } else {
+        return '#33ccff'; // Light blue
+    }
+}
+
+
+function style(feature) {
+    return {
+        fillColor: getColor(feature.properties.Lowmod_pct),
+        weight: 4,
+        opacity: 1,
+        color: 'white',  // Default border color
+        dashArray: '3',
+        fillOpacity: showColors ? 0.6 : 0.4
+    };
+}
+
+function highlightFeature(e) {
+    var layer = e.target;
+
+    layer.setStyle({
+        weight: 5,
+        color: 'green',
+        dashArray: '',
+        fillOpacity: 0.7
+    });
+
+    if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
+        layer.bringToFront();
+    }
+
+    // Update info panel with properties
+    var properties = layer.feature.properties;
+    document.getElementById('info').innerHTML = '<b>Census Tract:</b> ' + properties.Tract + '<br><b>Low Income:</b> ' + properties.Low + '<br><b>Low/Moderate Income:</b> ' + properties.Lowmod + '<br><b>Low/Mod Percentage:</b> ' + properties.Lowmod_pct;
+}
+
+function resetHighlight(e) {
+    geojsonLayer.resetStyle(e.target);
+    document.getElementById('info').innerHTML = '<b>Census Tract:</b> ' + '<br><b>Low Income:</b> ' + '<br><b>Low/Moderate Income:</b> ' +  '<br><b>Low/Mod Percentage:</b> '
+}
+
+function onEachFeature(feature, layer) {
+    layer.on({
+        mouseover: highlightFeature,
+        mouseout: resetHighlight
+    });
+}
+
+function loadGeoJSONLayer(map) {
+    fetch('/static/data/converted_geojson_data.geojson')
+        .then(response => response.json())
+        .then(data => {
+            geojsonLayer = L.geoJson(data, {
+                style: style,
+                onEachFeature: function(feature, layer) {
+                    // Now pass `map` as the third argument
+                    onEachFeature(feature, layer, map);
+                }
+            }).addTo(map);
+        });
+}
+
 
 //-------------------END INITIALIZE MAP --------------------------------------------
 
 //------------------DATE SLIDER----------------------------------------------
+// Function to toggle the sidebar
+function toggleSidebar() {
+    var sidebar = document.getElementById("sidebar");
+    sidebar.classList.toggle("active");
+}
+
+
 function fetchDateRangeAndInitializeSlider(map) {
     fetch('/api/date_range')
         .then(response => response.json())
@@ -319,7 +399,7 @@ function updateAllMarkerContents() {
 
             marker.setIcon(customIcon);
 
-            // Optionally, update the popup content as well
+            // update the popup content as well
             marker.bindPopup(`<b>Sensor ID:</b> ${sensor.sensor_id}<br><b>${activeMetric.toUpperCase()} Value:</b> ${displayValueRounded}`);
         });
     });
@@ -347,91 +427,137 @@ document.getElementById('updateSensorsButton').addEventListener('click', functio
 
 //------------------------------- ENDish ADD SENSORS -----------------------------
 
-// Function to get color based on lowmod_pct
-    
-function getColor(lowmod_pct) {
-    if (!showColors) {
-        return 'gray';
-    }
-    
-    if (lowmod_pct > 0.75) {
-        return 'red';
-    } else if (lowmod_pct > 0.5) {
-        return 'orange';
-    } else if (lowmod_pct > 0.25) {
-        return 'green';
-    } else {
-        return '#33ccff'; // Light blue
-    }
-}
-
-
-function style(feature) {
-    return {
-        fillColor: getColor(feature.properties.Lowmod_pct),
-        weight: 4,
-        opacity: 1,
-        color: 'white',  // Default border color
-        dashArray: '3',
-        fillOpacity: showColors ? 0.6 : 0.4
-    };
-}
-
-function highlightFeature(e) {
-    var layer = e.target;
-
-    layer.setStyle({
-        weight: 5,
-        color: 'green',
-        dashArray: '',
-        fillOpacity: 0.7
-    });
-
-    if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
-        layer.bringToFront();
-    }
-
-    // Update info panel with properties
-    var properties = layer.feature.properties;
-    document.getElementById('info').innerHTML = '<b>Census Tract:</b> ' + properties.Tract + '<br><b>Low Income:</b> ' + properties.Low + '<br><b>Low/Moderate Income:</b> ' + properties.Lowmod + '<br><b>Low/Mod Percentage:</b> ' + properties.Lowmod_pct;
-}
-
-function resetHighlight(e) {
-    geojsonLayer.resetStyle(e.target);
-    document.getElementById('info').innerHTML = '<b>Census Tract:</b> ' + '<br><b>Low Income:</b> ' + '<br><b>Low/Moderate Income:</b> ' +  '<br><b>Low/Mod Percentage:</b> '
-}
-
-function onEachFeature(feature, layer) {
-    layer.on({
-        mouseover: highlightFeature,
-        mouseout: resetHighlight
-    });
-}
-
-function loadGeoJSONLayer(map) {
-    fetch('/static/data/converted_geojson_data.geojson')
-        .then(response => response.json())
-        .then(data => {
-            geojsonLayer = L.geoJson(data, {
-                style: style,
-                onEachFeature: function(feature, layer) {
-                    // Now pass `map` as the third argument
-                    onEachFeature(feature, layer, map);
-                }
-            }).addTo(map);
-        });
-}
-
-
-
-// Function to toggle the sidebar
-function toggleSidebar() {
-    var sidebar = document.getElementById("sidebar");
-    sidebar.classList.toggle("active");
-}
 
 
 // ------------ CENTROIDS ---------------------------------------
+
+// will need to color markers by county and level (updated centroid data or do if statement
+// can then pass info summary in with the graphs
+//summary will need to have conditional to only send color and countys
+
+// Global array to store all centroid markers for easy access
+var centroidMarkers = [];
+// store markers by color
+var centroidByColor = {
+    salt_red: [],
+    salt_orange: [],
+    salt_green: [],
+    salt_lightBlue: [],
+    web_red: [],
+    web_orange: [],
+    web_green: [],
+    web_lightBlue: [],
+    dav_red: [],
+    dav_orange: [],
+    dav_green: [],
+    dav_lightBlue: []
+};
+
+function toggleCentroidsByColor(color, show,theSplitType) {
+    
+    
+    if(theSplitType == 'color'){
+        if (colorStates['salt'] == true){
+            centroidByColor['salt_' + color].forEach(marker => {
+                if (show) {
+                    marker.addTo(map);
+                } else {
+                    marker.remove();
+                }
+            })
+        }
+                                                    
+        if (colorStates['web'] == true){
+            centroidByColor['web_' + color].forEach(marker => {
+                if (show) {
+                    marker.addTo(map);
+                } else {
+                    marker.remove();
+                }
+            })
+        }
+                                                   
+       if (colorStates['dav'] == true){
+           centroidByColor['dav_' + color].forEach(marker => {
+               if (show) {
+                   marker.addTo(map);
+               } else {
+                   marker.remove();
+               }
+           })
+       }
+    }
+    
+    else {
+        if (colorStates['red'] == true){
+            centroidByColor[color + '_red'].forEach(marker => {
+                if (show) {
+                    marker.addTo(map);
+                } else {
+                    marker.remove();
+                }
+            })
+        }
+        if (colorStates['lightBlue'] == true){
+            centroidByColor[color + '_lightBlue'].forEach(marker => {
+                if (show) {
+                    marker.addTo(map);
+                } else {
+                    marker.remove();
+                }
+            })
+        }
+        if (colorStates['green'] == true){
+            centroidByColor[color + '_green'].forEach(marker => {
+                if (show) {
+                    marker.addTo(map);
+                } else {
+                    marker.remove();
+                }
+            })
+        }
+        if (colorStates['orange'] == true){
+            centroidByColor[color + '_orange'].forEach(marker => {
+                if (show) {
+                    marker.addTo(map);
+                } else {
+                    marker.remove();
+                }
+            })
+        }
+        
+    }
+}
+
+function updateAllCentroidContents() {
+    console.log('double wham') // !!!!!!!!!!!!! start here
+    Object.keys(centroidByColor).forEach(colorKey => {
+        centroidByColor[colorKey].forEach(marker => {
+            console.log(marker)
+            let sensor = marker.sensorData; // Retrieve the stored sensor data
+            let displayValue = activeMetric === 'pm2.5' ? sensor.pm25 : sensor.pm10;
+            let displayValueRounded = Math.round(displayValue);
+            // Construct the new HTML content for the marker
+            var htmlContent = `<div class='custom-icon'>` +
+                              `<img src="static/js/pinAdded.png" style="width:46.2px; height:53.2px;">` +
+                              `<span class='sensor-value'>${displayValue}</span>` +
+                              `</div>`;
+
+            var customIcon = L.divIcon({
+                html: htmlContent,
+                className: '',
+                iconSize: [46.2, 53.2],
+                iconAnchor: [16.5, 37],
+                popupAnchor: [0, -38]
+            });
+
+            marker.setIcon(customIcon);
+
+            // update the popup content as well
+            marker.bindPopup(`<b>Sensor ID:</b> ${sensor.sensor_id}<br><b>${activeMetric.toUpperCase()} Value:</b> ${displayValueRounded}`);
+        });
+    });
+}
 
 var greenIcon = L.icon({
     iconUrl: 'static/js/pinAdded.png',
@@ -469,10 +595,56 @@ function getCentroidForObjectID(objectID) {
     }
     return null;
 }
-
-
-// Global array to store all centroid markers for easy access
-var centroidMarkers = [];
+//function addSensorMarkers(data_sensor, map) {
+//    data_sensor.forEach(sensor => {
+//        var color; // Determine color for sensor base
+//
+//        // Assign color based on criteria
+//        if (sensor.county === 'Salt Lake County') {
+//            county = 'salt';
+//        } else if (sensor.county === 'Weber County') {
+//            county = 'web';
+//        } else if (sensor.county === 'Davis County') {
+//            county = 'dav';
+//        }
+//
+//        if (sensor.category === 'red') {
+//            color = county + '_red';
+//        } else if (sensor.category === 'green') {
+//            color = county + '_green';
+//        } else if (sensor.category === 'orange') {
+//            color = county + '_orange';
+//        } else if (sensor.category === 'blue') {
+//            color = county + '_lightBlue';
+//        }
+//
+//        // Construct the HTML for the marker
+//        var htmlContent = `<div class='custom-icon'>` +
+//                          `<img src="static/js/pin.png" style="width:46.2.5px; height:53.2px;">` +
+//                          `<span class='sensor-value'>${Math.round(sensor.avg_pm2)}</span>` +
+//                          `</div>`;
+//
+//        // Create a divIcon with the HTML content
+//        var customIcon = L.divIcon({
+//            html: htmlContent,
+//            className: '', // This is important to override default Leaflet icon styles
+//            iconSize: [46.2, 53.2],
+//            iconAnchor: [16.5, 37], // Adjust on the size of icon
+//            popupAnchor: [0, -38] // Adjust to position the popup
+//        });
+//
+//        // Create the marker with the custom icon and add to map
+//        var marker = L.marker([sensor.latitude, sensor.longitude], {icon: customIcon});
+//        marker.bindPopup(`<b>Sensor ID:</b> ${sensor.sensor_id}<br><b>PM2.5 Value:</b> ${Math.round(sensor.avg_pm2)}`);
+//        marker.sensorData = sensor;
+//        if (color) {
+//            markersByColor[color].push(marker); // Add marker to appropriate color category
+//            if (colorStates[county]==true & colorStates[sensor.category] ==true) { // Check if markers for this color should be displayed
+//                marker.addTo(map);
+//            }
+//        }
+//    });
+//}
 
 function onEachFeature(feature, layer, map) {
     layer.on({
@@ -481,7 +653,10 @@ function onEachFeature(feature, layer, map) {
         click: function(e) {
             // Get the centroid coordinates for the feature
             const centroid = getCentroidForObjectID(feature.properties.OBJECTID);
-            
+            console.log('bang bang')
+            console.log(feature)
+            console.log(feature.properties.category)
+            console.log('dang dang')
             if (centroid && document.getElementById('singleDate').checked) {
                 // Check if a marker for this OBJECTID already exists
                 const existingMarkerIndex = centroidMarkers.findIndex(marker => marker.sensorData && marker.sensorData.objectID === feature.properties.OBJECTID);
@@ -498,6 +673,28 @@ function onEachFeature(feature, layer, map) {
                 fetch(`/api/predict?lat=${centroid[1]}&lng=${centroid[0]}&avgPM2=1&avgPM10=20`)
                 .then(response => response.json())
                 .then(data => {
+                    
+                    // Assign color based on criteria//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                    // I can add color and such to the api pull and return that data
+                    if (feature.properties.Countyname === 'Salt Lake County') {
+                        county = 'salt';
+                    } else if (feature.properties.Countyname === 'Weber County') {
+                        county = 'web';
+                    } else if (feature.properties.Countyname === 'Davis County') {
+                        county = 'dav';
+                    }
+                    
+                    if (feature.properties.category === 'red') {
+                        color = county + '_red';
+                    } else if (feature.properties.category === 'green') {
+                        color = county + '_green';
+                    } else if (feature.properties.category === 'orange') {
+                        color = county + '_orange';
+                    } else if (feature.properties.category === 'blue') {
+                        color = county + '_lightBlue';
+                    }
+                    
+                    
                     const pm25Value = data[0];
                     const pm10Value = data[1];
                     const displayValue = activeMetric === 'pm2.5' ? pm25Value : pm10Value;
@@ -527,7 +724,13 @@ function onEachFeature(feature, layer, map) {
                     };
 
                     // Add the new marker to the global array
-                    centroidMarkers.push(newMarker);
+                    
+                    if (color) {
+                        centroidByColor[color].push(newMarker); // Add marker to appropriate color category
+                        if (colorStates[county]==true & colorStates[feature.properties.category] ==true) { // Check if markers for this color should be displayed
+                            newMarker.addTo(map);
+                        }
+                    }
                 })
                 .catch(error => console.error('Error fetching prediction data:', error));
             }
@@ -536,34 +739,67 @@ function onEachFeature(feature, layer, map) {
 }
 
 
-function updateCentroidMarkerContents() {
+//function updateCentroidMarkerContents() {
+//    centroidMarkers.forEach(marker => {
+//        const sensorData = marker.sensorData;
+//        const displayValue = activeMetric === 'pm2.5' ? sensorData.pm25 : sensorData.pm10;
+//
+//        var htmlContent = `<div class='custom-icon'>` +
+//                          `<img src="static/js/pinAdded.png" style="width:46.2px; height:53.2px;">` +
+//                          `<span class='sensor-value'>${displayValue}</span>` +
+//                          `</div>`;
+//
+//        var customIcon = L.divIcon({
+//            html: htmlContent,
+//            className: '',
+//            iconSize: [46.2, 53.2],
+//            iconAnchor: [16.5, 37],
+//            popupAnchor: [0, -38]
+//        });
+//
+//        marker.setIcon(customIcon);
+//
+//        // update the popup content as well
+//        let popupContent = `<b>Sensor ID:</b> ${sensorData.objectID}<br>` +
+//                           `<b>PM2.5 Value:</b> ${sensorData.pm25}<br>` +
+//                           `<b>PM10 Value:</b> ${sensorData.pm10}`;
+//        marker.setPopupContent(popupContent);
+//    });
+//}
+
+// use this function for updating graphs
+
+//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!Will Need to fix this to work with categories
+function getCentroidsSummary() {
+    let totalCentroids = centroidMarkers.length;
+    let totalPM25 = 0;
+    let totalPM10 = 0;
+
     centroidMarkers.forEach(marker => {
-        const sensorData = marker.sensorData;
-        const displayValue = activeMetric === 'pm2.5' ? sensorData.pm25 : sensorData.pm10;
-
-        var htmlContent = `<div class='custom-icon'>` +
-                          `<img src="static/js/pinAdded.png" style="width:46.2px; height:53.2px;">` +
-                          `<span class='sensor-value'>${displayValue}</span>` +
-                          `</div>`;
-
-        var customIcon = L.divIcon({
-            html: htmlContent,
-            className: '',
-            iconSize: [46.2, 53.2],
-            iconAnchor: [16.5, 37],
-            popupAnchor: [0, -38]
-        });
-
-        marker.setIcon(customIcon);
-
-        // update the popup content as well
-        let popupContent = `<b>Sensor ID:</b> ${sensorData.objectID}<br>` +
-                           `<b>PM2.5 Value:</b> ${sensorData.pm25}<br>` +
-                           `<b>PM10 Value:</b> ${sensorData.pm10}`;
-        marker.setPopupContent(popupContent);
+        if (marker.sensorData) {
+            totalPM25 += marker.sensorData.pm25;
+            totalPM10 += marker.sensorData.pm10;
+        }
     });
+
+    return {
+        totalCentroids,
+        totalPM25,
+        totalPM10
+    };
 }
 
+
+// clear all markers
+function clearAllCentroidMarkers(map) {
+    // Iterate over the centroidMarkers array and remove each marker from the map
+    centroidMarkers.forEach(marker => {
+        map.removeLayer(marker);
+    });
+
+    // Reset the centroidMarkers array to empty, removing all references to the markers
+    centroidMarkers = [];
+}
 
 
 
@@ -617,6 +853,7 @@ function toggleColorStateAndRefreshMap(color,theSplitType) {
 
     // refresh the map or markers based on this new state, call those functions here
     toggleMarkersByColor(color, colorStates[color],theSplitType);
+    toggleCentroidsByColor(color, colorStates[color],theSplitType)
 }
 
 
@@ -911,7 +1148,8 @@ document.addEventListener('DOMContentLoaded', function() {
         toggleButtonStates('toggleButton1');
         updateGraph(currentGraphType);
         updateAllMarkerContents();
-        updateCentroidMarkerContents();
+        updateAllCentroidContents();
+        
         if (document.getElementById('singleDate').checked){
             document.getElementById('sensorTitle').innerHTML = `<h4>Daily Average ${activeMetric} Levels <span style="font-size: smaller;">(${formatDateString(endDate)}</span>)</h4>`;
         }
@@ -926,7 +1164,8 @@ document.addEventListener('DOMContentLoaded', function() {
         toggleButtonStates('toggleButton2');
         updateGraph(currentGraphType);
         updateAllMarkerContents();
-        updateCentroidMarkerContents();
+        updateAllCentroidContents();
+        
         if (document.getElementById('singleDate').checked){
             document.getElementById('sensorTitle').innerHTML = `<h4>Daily Average ${activeMetric} Levels <span style="font-size: smaller;">(${formatDateString(endDate)}</span>)</h4>`;
         }
