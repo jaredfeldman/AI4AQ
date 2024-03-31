@@ -8,6 +8,9 @@ from flask import (
 import pandas as pd
 import sqlite3
 import traceback
+from tensorflow.keras.models import load_model
+import numpy as np
+
 
 ## import functions
 #from get_latest_sensor_test import return_table
@@ -99,14 +102,42 @@ def get_date_range():
     # Pass the dates to function
     return pd.read_csv('static/data/date_range.csv').to_json(orient='records')
     
-# Gets all dates and orders them for the date selection tool
+
+
+
+
+# test model
+model = load_model('static/data/test_model.h5')
+
 @app.route("/api/predict", methods=["GET"])
 def predict_AQ():
-    values = [10, 15]
-    # Directly return the list as a JSON response
-    return jsonify(values)
-    
+    try:
+        # Retrieve values from request and convert them to float
+        pm2 = float(request.args.get("avgPM2"))
+        pm10 = float(request.args.get("avgPM10"))
+        
+        # Ensure the input_value is shaped correctly
+        input_value = np.array([[pm2], [pm10]])  # Shape (1, 2)
+        
+        # Predict and round the prediction
+        prediction = model.predict(input_value)
+        prediction = np.round(prediction).flatten().tolist()  # Flatten and convert to list
+        
+        # Return the prediction as a JSON response
+        return jsonify(prediction)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
+
+
+## Gets all dates and orders them for the date selection tool
+#@app.route("/api/predict", methods=["GET"])
+#def predict_AQ():
+#    values = [10., 15.]
+#    # Directly return the list as a JSON response
+#    return jsonify(values)
+#
+               
 
 if __name__=="__main__":
     app.run(debug=True)

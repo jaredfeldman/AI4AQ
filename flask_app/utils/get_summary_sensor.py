@@ -157,6 +157,7 @@ def return_county(begin_date, end_date,red,orange,green,lightBlue,salt,web,dav):
     return df
     
 
+# This will be for linear graph data
 def sensor_linear(begin_date,end_date, the_sensor):
     connection = sqlite3.connect('static/data/sensors_readings_2016_present.db')
     

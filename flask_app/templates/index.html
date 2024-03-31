@@ -69,13 +69,7 @@
                             <a class="nav-link" href="#">Data</a>
                             <a class="nav-link" href="#">Contact</a>
                         </div>
-                        <div>
-                            <input type="radio" id="singleDate" name="dateSelection" value="single">
-                            <label for="singleDate">Single Date</label>
-                            
-                            <input type="radio" id="dateRange" name="dateSelection" value="range" checked>
-                            <label for="dateRange">Date Range</label>
-                        </div>
+
                     </div>
                 </div>
             </nav>
@@ -156,8 +150,17 @@
 
 
                 <!-- Colored Bar Container -->
-                <div id="colored-bar"></div>
-                
+                <div id="colored-bar">
+                    <div id = "radio_select">
+                        <input type="radio" id="singleDate" name="dateSelection" value="single">
+                        <label for="singleDate">Day</label>
+                        
+                        <input type="radio" id="dateRange" name="dateSelection" value="range" checked>
+                        <label for="dateRange">Range</label>
+                    </div>
+                    
+                </div>
+
                 <!--Date Slider-->
                 <div id="slider-button-container">
                     <div id="date-slider"></div>

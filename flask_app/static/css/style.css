@@ -97,7 +97,7 @@ h1, h2, h3, h4, h5, h6 {
     border: none; /* Optional: remove borders */
 }
 
-/* Optional: if you want to keep the border but remove space, you might need to overlap the borders */
+
 #pmButtons .btn + .btn {
     margin-left: -10px; /* Overlap borders */
 }
@@ -126,7 +126,7 @@ h1, h2, h3, h4, h5, h6 {
 #slider-button-container {
     position: fixed;
     bottom: 5px;
-    left: 70px;
+    left: 60px;
     display: flex;
     width: 92%;
     align-items: center; /* This ensure vertical alignment */
@@ -135,7 +135,7 @@ h1, h2, h3, h4, h5, h6 {
 
 #date-slider {
     flex-grow: 1; /* Slider takes up as much space as possible */
-    margin-right: 30px; /* Spacing between slider and button */
+    margin-right: 50px; /* Spacing between slider and button */
     bottom: 0px;
 }
 
@@ -244,15 +244,15 @@ h1, h2, h3, h4, h5, h6 {
     right: 50px;
     top: 40px;
     width: 500px;
-    display: flex; /* This will lay out the direct children of this container side by side */
+    display: flex; /* lay out the direct children of this container side by side */
     flex-wrap: wrap; /* Allows buttons to wrap to the next line if the container's width is too small */
-    gap: 10px; /* Adds some space between the buttons */
+    gap: 10px;
 }
 
 .color-button, #colorToggle {
     flex: 0 1 auto; /* Allows buttons to grow and shrink but not beyond their content's size */
     cursor: pointer; /* Changes the mouse cursor to indicate clickable items */
-    /* Add other styling here such as background-color, color, border, etc. */
+    
 }
 
 /* Example of a specific button styling */
@@ -329,4 +329,14 @@ h1, h2, h3, h4, h5, h6 {
     top: 283px; /* Up from the bottom */
     z-index: 1000;
     width: 180px;
+}
+
+#radio_select{
+    position: fixed;
+    font-size: 14px;
+    bottom: 50px;
+    right: 60px;
+    color: white;
+    z-index: 1000px;
+    
 }

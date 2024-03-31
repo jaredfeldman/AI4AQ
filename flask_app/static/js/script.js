@@ -447,13 +447,13 @@ function onEachFeature(feature, layer, map) {
         click: function(e) {
             const centroid = getCentroidForObjectID(feature.properties.OBJECTID);
             if ((centroid) && (document.getElementById('singleDate').checked)) {
-                fetch(`/api/predict?lat=${centroid[1]}&lng=${centroid[0]}`)
+                fetch(`/api/predict?lat=${centroid[1]}&lng=${centroid[5]}&avgPM2=${1}&avgPM10=${20}`)
                 .then(response => response.json())
                 .then(data => {
                     const pm25Value = data[0];
                     const pm10Value = data[1];
 
-                    // Assuming `activeMetric` holds the current metric ('pm2.5' or 'pm10')
+                    // `activeMetric` holds the current metric ('pm2.5' or 'pm10')
                     const displayValue = activeMetric === 'pm2.5' ? pm25Value : pm10Value;
 
                     var htmlContent = `<div class='custom-icon'>` +
@@ -926,7 +926,7 @@ document.addEventListener('DOMContentLoaded', function() {
         updateAllMarkerContents();
         updateCentroidMarkerContents();
         document.getElementById('sensorTitle').innerHTML = `<h4>${activeMetric} Levels <span style="font-size: smaller;">(between ${formatDateString(startDate)} and ${formatDateString(endDate)}</span>)</h4>`;
-        // Assume calculateCountyGraph is called with the data when the button is pressed
+       
     });
 
     document.getElementById('toggleButton2').addEventListener('click', function() {
@@ -936,7 +936,7 @@ document.addEventListener('DOMContentLoaded', function() {
         updateAllMarkerContents();
         updateCentroidMarkerContents();
         document.getElementById('sensorTitle').innerHTML = `<h4>${activeMetric} Levels <span style="font-size: smaller;">(between ${formatDateString(startDate)} and ${formatDateString(endDate)}</span>)</h4>`;
-        // Assume calculateCountyGraph is called with the data when the button is pressed
+       
     });
 });
 
@@ -961,14 +961,14 @@ function formatDateString(dateString) {
 document.getElementById('singleDate').addEventListener('change', function() {
     if (this.checked) {
         dateSlider.noUiSlider.destroy(); // Destroy current slider instance
-        initializeSingleDateSlider(dateArray); // Assume dateArray is globally accessible or fetch it as needed
+        initializeSingleDateSlider(dateArray);
     }
 });
 
 document.getElementById('dateRange').addEventListener('change', function() {
     if (this.checked) {
         dateSlider.noUiSlider.destroy(); // Destroy current slider instance
-        initializeDateRangeSlider(dateArray); // Assume dateArray is globally accessible or fetch it as needed
+        initializeDateRangeSlider(dateArray);
     }
 });
 
