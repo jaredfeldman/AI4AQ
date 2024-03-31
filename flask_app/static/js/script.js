@@ -1,4 +1,4 @@
-// global variables for storing selected start and end dates and all current markers
+// Global variables for storing selected start and end dates and all current markers
 var startDate = "2020-01-01"; // default start date
 var endDate = "2020-12-31"; // default end date
 var allMarkers = [];
@@ -46,6 +46,11 @@ var dateSlider;
 
 let dateArray = [];
 
+
+//--------------END GLOBAL VARIABLES---------------------------------------------
+
+
+//--------------INITIALIZE MAP-------------------------------------------------
 document.addEventListener('DOMContentLoaded', function() {
     map = initializeMap();
     loadCentroidData(() => {
@@ -74,6 +79,9 @@ function initializeMap() {
 }
 
 
+//-------------------END INITIALIZE MAP --------------------------------------------
+
+//------------------DATE SLIDER----------------------------------------------
 function fetchDateRangeAndInitializeSlider(map) {
     fetch('/api/date_range')
         .then(response => response.json())
@@ -121,9 +129,9 @@ function initializeDateRangeSlider(dateArray) {
         }
     });
 }
+//-------------------END SLIDER---------------------------
 
-
-// ------------------------ UPDATE/ADD SENSORS ----------------------------------------
+// ------------------------ UPDATE/ADD SENSORS MARKERS ----------------------------------------
 
 function updateSensors(startDate, endDate, map) {
     clearMarkers();
@@ -136,7 +144,13 @@ function updateSensors(startDate, endDate, map) {
         .then(data_sensor => {
             addSensorMarkers(data_sensor, map);
             calculateBarGraph(data_sensor);
-            document.getElementById('sensorTitle').innerHTML = `<h4>${activeMetric} Levels <span style="font-size: smaller;">(between ${formatDateString(startDate)} and ${formatDateString(endDate)}</span>)</h4>`;
+            if (document.getElementById('singleDate').checked){
+                document.getElementById('sensorTitle').innerHTML = `<h4>Daily Average ${activeMetric} Levels <span style="font-size: smaller;">(${formatDateString(endDate)}</span>)</h4>`;
+            }
+            else {
+                document.getElementById('sensorTitle').innerHTML = `<h4>Average ${activeMetric} Levels <span style="font-size: smaller;">(${formatDateString(startDate)} to ${formatDateString(endDate)}</span>)</h4>`;
+            }
+
 ;
         })
         .catch(error => console.error('Error fetching sensor data:', error));
@@ -311,6 +325,26 @@ function updateAllMarkerContents() {
     });
 }
 
+// Update sensor data based on current dates and map state
+function refreshSensorData() {
+    // Reset all color buttons to true/pushed state
+    Object.keys(colorStates).forEach(color => {
+        colorStates[color] = true; // Set each color state to true
+        updateButtonStyle(color); // Update button styles to reflect the pushed state
+    });
+
+    updateDatesFromSlider();
+    clearMarkers(); // Clear existing markers before fetching new data
+    updateSensors(startDate, endDate, map); // Fetch and display new sensor data
+}
+
+// Call this function after loading new sensor data:
+document.getElementById('updateSensorsButton').addEventListener('click', function() {
+    resetButtonStates(); // Ensure this is called to reset states as needed
+    refreshSensorData(); // Load new data and refresh UI accordingly
+    
+});
+
 //------------------------------- ENDish ADD SENSORS -----------------------------
 
 // Function to get color based on lowmod_pct
@@ -445,15 +479,27 @@ function onEachFeature(feature, layer, map) {
         mouseover: highlightFeature,
         mouseout: resetHighlight,
         click: function(e) {
+            // Get the centroid coordinates for the feature
             const centroid = getCentroidForObjectID(feature.properties.OBJECTID);
-            if ((centroid) && (document.getElementById('singleDate').checked)) {
-                fetch(`/api/predict?lat=${centroid[1]}&lng=${centroid[5]}&avgPM2=${1}&avgPM10=${20}`)
+            
+            if (centroid && document.getElementById('singleDate').checked) {
+                // Check if a marker for this OBJECTID already exists
+                const existingMarkerIndex = centroidMarkers.findIndex(marker => marker.sensorData && marker.sensorData.objectID === feature.properties.OBJECTID);
+                
+                if (existingMarkerIndex !== -1) {
+                    // Marker exists, remove it from the map and the global array
+                    map.removeLayer(centroidMarkers[existingMarkerIndex]);
+                    centroidMarkers.splice(existingMarkerIndex, 1);
+                    console.log("Existing marker removed.");
+                    return; // Stop execution to not add a new marker
+                }
+
+                // Proceed to add a new marker
+                fetch(`/api/predict?lat=${centroid[1]}&lng=${centroid[0]}&avgPM2=1&avgPM10=20`)
                 .then(response => response.json())
                 .then(data => {
                     const pm25Value = data[0];
                     const pm10Value = data[1];
-
-                    // `activeMetric` holds the current metric ('pm2.5' or 'pm10')
                     const displayValue = activeMetric === 'pm2.5' ? pm25Value : pm10Value;
 
                     var htmlContent = `<div class='custom-icon'>` +
@@ -469,26 +515,26 @@ function onEachFeature(feature, layer, map) {
                         popupAnchor: [0, -38]
                     });
 
-                    const marker = L.marker([centroid[1], centroid[0]], {icon: customIcon}).addTo(map);
-                    marker.bindPopup(`<b>Sensor ID:</b> ${feature.properties.OBJECTID}<br>` +
+                    const newMarker = L.marker([centroid[1], centroid[0]], {icon: customIcon}).addTo(map);
+                    newMarker.bindPopup(`<b>Sensor ID:</b> ${feature.properties.OBJECTID}<br>` +
                                      `<b>PM2.5 Value:</b> ${pm25Value}<br>` +
                                      `<b>PM10 Value:</b> ${pm10Value}`);
-
-                    // Store PM values and OBJECTID in the marker for future reference
-                    marker.sensorData = {
+                                     
+                    newMarker.sensorData = {
                         objectID: feature.properties.OBJECTID,
                         pm25: pm25Value,
                         pm10: pm10Value
                     };
 
-                    // Add marker to global array
-                    centroidMarkers.push(marker);
+                    // Add the new marker to the global array
+                    centroidMarkers.push(newMarker);
                 })
                 .catch(error => console.error('Error fetching prediction data:', error));
             }
         }
     });
 }
+
 
 function updateCentroidMarkerContents() {
     centroidMarkers.forEach(marker => {
@@ -510,7 +556,7 @@ function updateCentroidMarkerContents() {
 
         marker.setIcon(customIcon);
 
-        // Optionally update the popup content as well
+        // update the popup content as well
         let popupContent = `<b>Sensor ID:</b> ${sensorData.objectID}<br>` +
                            `<b>PM2.5 Value:</b> ${sensorData.pm25}<br>` +
                            `<b>PM10 Value:</b> ${sensorData.pm10}`;
@@ -521,9 +567,9 @@ function updateCentroidMarkerContents() {
 
 
 
-
-
 // ------------ END CENTROIDS --------------------------------
+
+// ----------- STYLE UPDATES --------------------------
 
 document.getElementById('colorToggle').addEventListener('click', function() {
     showColors = !showColors; // Toggle the state
@@ -565,7 +611,6 @@ function updateButtonStyle(color) {
 }
 
 
-
 function toggleColorStateAndRefreshMap(color,theSplitType) {
     colorStates[color] = !colorStates[color]; // Toggle the state
     updateButtonStyle(color); // Update the button appearance
@@ -575,10 +620,9 @@ function toggleColorStateAndRefreshMap(color,theSplitType) {
 }
 
 
-
 // Function to update dates globally
 function updateDatesFromSlider() {
-    console.log('no?')
+
     let values = dateSlider.noUiSlider.get();
     startDate = values[0];
     endDate = values[1];
@@ -590,72 +634,13 @@ function updateDatesFromSlider() {
     };
 }
 
-// Update sensor data based on current dates and map state
-function refreshSensorData() {
-    // Reset all color buttons to true/pushed state
-    Object.keys(colorStates).forEach(color => {
-        colorStates[color] = true; // Set each color state to true
-        updateButtonStyle(color); // Update button styles to reflect the pushed state
-    });
-
-    updateDatesFromSlider();
-    clearMarkers(); // Clear existing markers before fetching new data
-    updateSensors(startDate, endDate, map); // Fetch and display new sensor data
+function formatDateString(dateString) {
+    const date = new Date(dateString);
+    let month = (date.getMonth() + 1).toString().padStart(2, '0'); // getMonth() is zero-based
+    let day = date.getDate().toString().padStart(2, '0');
+    let year = date.getFullYear();
+    return `${month}-${day}-${year}`;
 }
-
-// Call this function after loading new sensor data:
-document.getElementById('updateSensorsButton').addEventListener('click', function() {
-    resetButtonStates(); // Ensure this is called to reset states as needed
-    refreshSensorData(); // Load new data and refresh UI accordingly
-    
-});
-
-
-
-
-
-document.getElementById('toggleRed').addEventListener('click', () => {
-    toggleColorStateAndRefreshMap('red','color')
-    updateJustGraph();
-});
-document.getElementById('toggleOrange').addEventListener('click', () => {
-    toggleColorStateAndRefreshMap('orange','color')
-    updateJustGraph();
-});
-document.getElementById('toggleGreen').addEventListener('click', () => {
-    toggleColorStateAndRefreshMap('green','color')
-    updateJustGraph();
-});
-document.getElementById('toggleLightBlue').addEventListener('click', () => {
-    toggleColorStateAndRefreshMap('lightBlue','color')
-    updateJustGraph();
-});
-
-// Example for one button, repeat for others
-document.getElementById('toggleSalt').addEventListener('click', () => {
-    // Toggle state
-    toggleColorStateAndRefreshMap('salt','county')
-    // Refresh graph based on current graph type
-    updateJustGraph();
-});
-
-// Example for one button, repeat for others
-document.getElementById('toggleWeb').addEventListener('click', () => {
-    // Update button appearance
-    toggleColorStateAndRefreshMap('web','county')
-    // Refresh graph based on current graph type
-    updateJustGraph();
-});
-
-// Example for one button, repeat for others
-document.getElementById('toggleDav').addEventListener('click', () => {
-    // Update button appearance
-    toggleColorStateAndRefreshMap('dav','county')
-    // Refresh graph based on current graph type
-    updateJustGraph();
-});
-
-
 
 function resetButtonStates() {
     Object.keys(colorStates).forEach(color => {
@@ -666,6 +651,8 @@ function resetButtonStates() {
 
     });
 }
+
+// -------------END STYLE -----------------------------------
 
 
 // BAR GRAPHS ----------------------------------------------
@@ -887,7 +874,7 @@ function updateGraph(graphType) {
 
 //---------------------- END GRAPHS ------------------------
 
-// Add event listeners to buttons
+// Add event listeners to buttons -----------------------------------
 document.getElementById('categoryGraphButton').addEventListener('click', function() {
     currentGraphType = 'category';
     updateGraph('category');
@@ -925,7 +912,12 @@ document.addEventListener('DOMContentLoaded', function() {
         updateGraph(currentGraphType);
         updateAllMarkerContents();
         updateCentroidMarkerContents();
-        document.getElementById('sensorTitle').innerHTML = `<h4>${activeMetric} Levels <span style="font-size: smaller;">(between ${formatDateString(startDate)} and ${formatDateString(endDate)}</span>)</h4>`;
+        if (document.getElementById('singleDate').checked){
+            document.getElementById('sensorTitle').innerHTML = `<h4>Daily Average ${activeMetric} Levels <span style="font-size: smaller;">(${formatDateString(endDate)}</span>)</h4>`;
+        }
+        else {
+            document.getElementById('sensorTitle').innerHTML = `<h4>Average ${activeMetric} Levels <span style="font-size: smaller;">(${formatDateString(startDate)} to ${formatDateString(endDate)}</span>)</h4>`;
+        }
        
     });
 
@@ -935,7 +927,12 @@ document.addEventListener('DOMContentLoaded', function() {
         updateGraph(currentGraphType);
         updateAllMarkerContents();
         updateCentroidMarkerContents();
-        document.getElementById('sensorTitle').innerHTML = `<h4>${activeMetric} Levels <span style="font-size: smaller;">(between ${formatDateString(startDate)} and ${formatDateString(endDate)}</span>)</h4>`;
+        if (document.getElementById('singleDate').checked){
+            document.getElementById('sensorTitle').innerHTML = `<h4>Daily Average ${activeMetric} Levels <span style="font-size: smaller;">(${formatDateString(endDate)}</span>)</h4>`;
+        }
+        else {
+            document.getElementById('sensorTitle').innerHTML = `<h4>Average ${activeMetric} Levels <span style="font-size: smaller;">(${formatDateString(startDate)} to ${formatDateString(endDate)}</span>)</h4>`;
+        }
        
     });
 });
@@ -946,16 +943,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // Trigger click event on the first toggle button to activate PM2.5 on page load
     document.getElementById('toggleButton1').click();
 });
-
-function formatDateString(dateString) {
-    const date = new Date(dateString);
-    let month = (date.getMonth() + 1).toString().padStart(2, '0'); // getMonth() is zero-based
-    let day = date.getDate().toString().padStart(2, '0');
-    let year = date.getFullYear();
-    return `${month}-${day}-${year}`;
-}
-
-
 
 
 document.getElementById('singleDate').addEventListener('change', function() {
@@ -971,4 +958,46 @@ document.getElementById('dateRange').addEventListener('change', function() {
         initializeDateRangeSlider(dateArray);
     }
 });
+
+document.getElementById('toggleRed').addEventListener('click', () => {
+    toggleColorStateAndRefreshMap('red','color')
+    updateJustGraph();
+});
+document.getElementById('toggleOrange').addEventListener('click', () => {
+    toggleColorStateAndRefreshMap('orange','color')
+    updateJustGraph();
+});
+document.getElementById('toggleGreen').addEventListener('click', () => {
+    toggleColorStateAndRefreshMap('green','color')
+    updateJustGraph();
+});
+document.getElementById('toggleLightBlue').addEventListener('click', () => {
+    toggleColorStateAndRefreshMap('lightBlue','color')
+    updateJustGraph();
+});
+
+// Example for one button, repeat for others
+document.getElementById('toggleSalt').addEventListener('click', () => {
+    // Toggle state
+    toggleColorStateAndRefreshMap('salt','county')
+    // Refresh graph based on current graph type
+    updateJustGraph();
+});
+
+// Example for one button, repeat for others
+document.getElementById('toggleWeb').addEventListener('click', () => {
+    // Update button appearance
+    toggleColorStateAndRefreshMap('web','county')
+    // Refresh graph based on current graph type
+    updateJustGraph();
+});
+
+// Example for one button, repeat for others
+document.getElementById('toggleDav').addEventListener('click', () => {
+    // Update button appearance
+    toggleColorStateAndRefreshMap('dav','county')
+    // Refresh graph based on current graph type
+    updateJustGraph();
+});
+
 

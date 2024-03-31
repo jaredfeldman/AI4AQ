@@ -56,28 +56,31 @@ h1, h2, h3, h4, h5, h6 {
     height: 100%; /* Fills the container */
 }
 
-#my_dataviz {
+
+#dataviz-container{
     position: fixed;
     right: 20px; /* Right side of the screen */
     bottom: 140px; /* Up from the bottom */
     width: 300px;
+    z-index: 1000; /* Ensure it appears above the map */
+}
+
+#my_dataviz {
+    
     height: 320px;
     background-color: rgba(255, 255, 255, 0.8); 
     padding: 10px;
     border-radius: 5px; /* Optional: Rounded corners for the box */
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    z-index: 1000; /* Ensure it appears above the map */
+    
 }
 
 #my_dataviz_buttons{
-    position: fixed;
-    right: 20px; /* Right side of the screen */
-    top: 800px; /* Up from the bottom */
     width: 300px;
     height: 40px;
     border-radius: 8px;
-    z-index: 1000; /* Ensure it appears above the map */
-    
+    top: -10px;
+    right: 0px;
 }
 
 .button-group-colors {
@@ -128,19 +131,31 @@ h1, h2, h3, h4, h5, h6 {
     bottom: 5px;
     left: 60px;
     display: flex;
-    width: 92%;
+    width: 99%;
     align-items: center; /* This ensure vertical alignment */
     z-index: 1000; /* Ensure it's above the map */
 }
+
+#radio_select{
+    position: relative;
+    bottom: 30px;
+    font-size: 14px;
+    left: 10px;
+    color: white;
+}
+
+#updateSensorsButton {
+    position: relative;
+    top: 0px;
+    left: -90px;
+    width: 100px;
+}
+
 
 #date-slider {
     flex-grow: 1; /* Slider takes up as much space as possible */
     margin-right: 50px; /* Spacing between slider and button */
     bottom: 0px;
-}
-
-#updateSensorsButton {
-    width: 100px;
 }
 
 #colored-bar {
@@ -331,12 +346,4 @@ h1, h2, h3, h4, h5, h6 {
     width: 180px;
 }
 
-#radio_select{
-    position: fixed;
-    font-size: 14px;
-    bottom: 50px;
-    right: 60px;
-    color: white;
-    z-index: 1000px;
-    
-}
+

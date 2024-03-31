@@ -114,13 +114,14 @@
                 
                 <!-- Create a div for graph -->
 
-
-                <div id="my_dataviz"></div>
-                
-                <!-- Graph Toggle Buttons -->
-                <div class="btn-group mt-2" role="group2" aria-label="Basic checkbox toggle button group" id="my_dataviz_buttons">
-                    <button id="categoryGraphButton" class="btn btn-secondary">Income Levels</button>
-                    <button id="countyGraphButton" class="btn btn-secondary">County</button>
+                <div id="dataviz-container">
+                    <div id="my_dataviz"></div>
+                    
+                    <!-- Graph Toggle Buttons -->
+                    <div class="btn-group mt-2" role="group2" aria-label="Basic checkbox toggle button group" id="my_dataviz_buttons">
+                        <button id="categoryGraphButton" class="btn btn-secondary">Income Levels</button>
+                        <button id="countyGraphButton" class="btn btn-secondary">County</button>
+                    </div>
                 </div>
                 
                 <!--Buttons PM-->
@@ -151,19 +152,19 @@
 
                 <!-- Colored Bar Container -->
                 <div id="colored-bar">
-                    <div id = "radio_select">
-                        <input type="radio" id="singleDate" name="dateSelection" value="single">
-                        <label for="singleDate">Day</label>
-                        
-                        <input type="radio" id="dateRange" name="dateSelection" value="range" checked>
-                        <label for="dateRange">Range</label>
-                    </div>
                     
                 </div>
 
                 <!--Date Slider-->
                 <div id="slider-button-container">
                     <div id="date-slider"></div>
+                    <div id = "radio_select">
+                        <input type="radio" id="singleDate" name="dateSelection" value="single" checked>
+                        <label for="singleDate">Day</label>
+                        
+                        <input type="radio" id="dateRange" name="dateSelection" value="range">
+                        <label for="dateRange">Range</label>
+                    </div>
                     <button id="updateSensorsButton">Update</button>
                 </div>
 

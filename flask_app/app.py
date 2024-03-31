@@ -105,9 +105,9 @@ def get_date_range():
 
 
 
-
+# Temporarily turn OFF MOdel!!!!!!!!!!!!!!!!!!!!!!!!!!
 # test model
-model = load_model('static/data/test_model.h5')
+#model = load_model('static/data/test_model.h5')
 
 @app.route("/api/predict", methods=["GET"])
 def predict_AQ():
