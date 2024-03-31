@@ -215,6 +215,7 @@ function initializeDateRangeSlider(dateArray) {
 
 function updateSensors(startDate, endDate, map) {
     clearMarkers();
+    clearAllCentroidMarkers();
     
     const url = `/api/summary_sensor?begin_date=${startDate}&end_date=${endDate}&red=${colorStates.red}&orange=${colorStates.orange}&green=${colorStates.green}&lightBlue=${colorStates.lightBlue}&salt=${colorStates.salt}&web=${colorStates.web}&dav=${colorStates.dav}`;
     console.log(startDate)
@@ -415,6 +416,7 @@ function refreshSensorData() {
 
     updateDatesFromSlider();
     clearMarkers(); // Clear existing markers before fetching new data
+    clearAllCentroidMarkers();
     updateSensors(startDate, endDate, map); // Fetch and display new sensor data
 }
 
@@ -651,50 +653,44 @@ function onEachFeature(feature, layer, map) {
         mouseover: highlightFeature,
         mouseout: resetHighlight,
         click: function(e) {
-            // Get the centroid coordinates for the feature
             const centroid = getCentroidForObjectID(feature.properties.OBJECTID);
-            console.log('bang bang')
-            console.log(feature)
-            console.log(feature.properties.category)
-            console.log('dang dang')
+
             if (centroid && document.getElementById('singleDate').checked) {
-                // Check if a marker for this OBJECTID already exists
-                const existingMarkerIndex = centroidMarkers.findIndex(marker => marker.sensorData && marker.sensorData.objectID === feature.properties.OBJECTID);
+                // Determine the county and color based on feature properties
+                let county, color;
+                if (feature.properties.Countyname === 'Salt Lake County') {
+                    county = 'salt';
+                } else if (feature.properties.Countyname === 'Weber County') {
+                    county = 'web';
+                } else if (feature.properties.Countyname === 'Davis County') {
+                    county = 'dav';
+                }
                 
+                if (feature.properties.category === 'red') {
+                    color = county + '_red';
+                } else if (feature.properties.category === 'green') {
+                    color = county + '_green';
+                } else if (feature.properties.category === 'orange') {
+                    color = county + '_orange';
+                } else if (feature.properties.category === 'blue') {
+                    color = county + '_lightBlue';
+                }
+
+                // Check if a marker for this objectID already exists in the specific category
+                const existingMarkerIndex = centroidByColor[color].findIndex(marker => marker.sensorData && marker.sensorData.objectID === feature.properties.OBJECTID);
+
                 if (existingMarkerIndex !== -1) {
-                    // Marker exists, remove it from the map and the global array
-                    map.removeLayer(centroidMarkers[existingMarkerIndex]);
-                    centroidMarkers.splice(existingMarkerIndex, 1);
+                    // Marker exists, remove it from the map and the category array
+                    map.removeLayer(centroidByColor[color][existingMarkerIndex]);
+                    centroidByColor[color].splice(existingMarkerIndex, 1);
                     console.log("Existing marker removed.");
                     return; // Stop execution to not add a new marker
                 }
 
-                // Proceed to add a new marker
+                // Fetch data and add new marker
                 fetch(`/api/predict?lat=${centroid[1]}&lng=${centroid[0]}&avgPM2=1&avgPM10=20`)
                 .then(response => response.json())
                 .then(data => {
-                    
-                    // Assign color based on criteria//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                    // I can add color and such to the api pull and return that data
-                    if (feature.properties.Countyname === 'Salt Lake County') {
-                        county = 'salt';
-                    } else if (feature.properties.Countyname === 'Weber County') {
-                        county = 'web';
-                    } else if (feature.properties.Countyname === 'Davis County') {
-                        county = 'dav';
-                    }
-                    
-                    if (feature.properties.category === 'red') {
-                        color = county + '_red';
-                    } else if (feature.properties.category === 'green') {
-                        color = county + '_green';
-                    } else if (feature.properties.category === 'orange') {
-                        color = county + '_orange';
-                    } else if (feature.properties.category === 'blue') {
-                        color = county + '_lightBlue';
-                    }
-                    
-                    
                     const pm25Value = data[0];
                     const pm10Value = data[1];
                     const displayValue = activeMetric === 'pm2.5' ? pm25Value : pm10Value;
@@ -712,7 +708,7 @@ function onEachFeature(feature, layer, map) {
                         popupAnchor: [0, -38]
                     });
 
-                    const newMarker = L.marker([centroid[1], centroid[0]], {icon: customIcon}).addTo(map);
+                    const newMarker = L.marker([centroid[1], centroid[0]], {icon: customIcon});
                     newMarker.bindPopup(`<b>Sensor ID:</b> ${feature.properties.OBJECTID}<br>` +
                                      `<b>PM2.5 Value:</b> ${pm25Value}<br>` +
                                      `<b>PM10 Value:</b> ${pm10Value}`);
@@ -720,16 +716,15 @@ function onEachFeature(feature, layer, map) {
                     newMarker.sensorData = {
                         objectID: feature.properties.OBJECTID,
                         pm25: pm25Value,
-                        pm10: pm10Value
+                        pm10: pm10Value,
+                        county: county,
+                        category: feature.properties.category
                     };
 
-                    // Add the new marker to the global array
-                    
-                    if (color) {
-                        centroidByColor[color].push(newMarker); // Add marker to appropriate color category
-                        if (colorStates[county]==true & colorStates[feature.properties.category] ==true) { // Check if markers for this color should be displayed
-                            newMarker.addTo(map);
-                        }
+                    // Add the new marker to the appropriate category array
+                    centroidByColor[color].push(newMarker);
+                    if (colorStates[county] == true && colorStates[feature.properties.category] == true) {
+                        newMarker.addTo(map);
                     }
                 })
                 .catch(error => console.error('Error fetching prediction data:', error));
@@ -737,6 +732,7 @@ function onEachFeature(feature, layer, map) {
         }
     });
 }
+
 
 
 //function updateCentroidMarkerContents() {
@@ -792,13 +788,13 @@ function getCentroidsSummary() {
 
 // clear all markers
 function clearAllCentroidMarkers(map) {
-    // Iterate over the centroidMarkers array and remove each marker from the map
-    centroidMarkers.forEach(marker => {
-        map.removeLayer(marker);
+
+    // Clear markers from each category
+    Object.values(centroidByColor).forEach(markersArray => {
+        markersArray.forEach(marker => marker.remove());
+        markersArray.length = 0; // Clear the array
     });
 
-    // Reset the centroidMarkers array to empty, removing all references to the markers
-    centroidMarkers = [];
 }
 
 
