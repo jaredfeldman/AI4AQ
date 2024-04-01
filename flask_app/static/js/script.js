@@ -597,56 +597,7 @@ function getCentroidForObjectID(objectID) {
     }
     return null;
 }
-//function addSensorMarkers(data_sensor, map) {
-//    data_sensor.forEach(sensor => {
-//        var color; // Determine color for sensor base
-//
-//        // Assign color based on criteria
-//        if (sensor.county === 'Salt Lake County') {
-//            county = 'salt';
-//        } else if (sensor.county === 'Weber County') {
-//            county = 'web';
-//        } else if (sensor.county === 'Davis County') {
-//            county = 'dav';
-//        }
-//
-//        if (sensor.category === 'red') {
-//            color = county + '_red';
-//        } else if (sensor.category === 'green') {
-//            color = county + '_green';
-//        } else if (sensor.category === 'orange') {
-//            color = county + '_orange';
-//        } else if (sensor.category === 'blue') {
-//            color = county + '_lightBlue';
-//        }
-//
-//        // Construct the HTML for the marker
-//        var htmlContent = `<div class='custom-icon'>` +
-//                          `<img src="static/js/pin.png" style="width:46.2.5px; height:53.2px;">` +
-//                          `<span class='sensor-value'>${Math.round(sensor.avg_pm2)}</span>` +
-//                          `</div>`;
-//
-//        // Create a divIcon with the HTML content
-//        var customIcon = L.divIcon({
-//            html: htmlContent,
-//            className: '', // This is important to override default Leaflet icon styles
-//            iconSize: [46.2, 53.2],
-//            iconAnchor: [16.5, 37], // Adjust on the size of icon
-//            popupAnchor: [0, -38] // Adjust to position the popup
-//        });
-//
-//        // Create the marker with the custom icon and add to map
-//        var marker = L.marker([sensor.latitude, sensor.longitude], {icon: customIcon});
-//        marker.bindPopup(`<b>Sensor ID:</b> ${sensor.sensor_id}<br><b>PM2.5 Value:</b> ${Math.round(sensor.avg_pm2)}`);
-//        marker.sensorData = sensor;
-//        if (color) {
-//            markersByColor[color].push(marker); // Add marker to appropriate color category
-//            if (colorStates[county]==true & colorStates[sensor.category] ==true) { // Check if markers for this color should be displayed
-//                marker.addTo(map);
-//            }
-//        }
-//    });
-//}
+
 
 function onEachFeature(feature, layer, map) {
     layer.on({
@@ -765,25 +716,83 @@ function onEachFeature(feature, layer, map) {
 
 // use this function for updating graphs
 
-//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!Will Need to fix this to work with categories
-function getCentroidsSummary() {
-    let totalCentroids = centroidMarkers.length;
-    let totalPM25 = 0;
-    let totalPM10 = 0;
+//function getCentroidsSummary() {
+//    let totalCentroids = 0;
+//    let totalPM25 = 0;
+//    let totalPM10 = 0;
+//
+//    // Iterate over each category in centroidByColor
+//    Object.entries(centroidByColor).forEach(([category, markers]) => {
+//        // Split the category to get the county and the color
+//        let [county, color] = category.split("_");
+//
+//        // Check if this category is currently active
+//        if (colorStates[county] && colorStates[color]) {
+//            totalCentroids += markers.length; // Add the count of markers in this category
+//
+//            markers.forEach(marker => {
+//                if (marker.sensorData) {
+//                    totalPM25 += marker.sensorData.pm25;
+//                    totalPM10 += marker.sensorData.pm10;
+//                }
+//            });
+//        }
+//    });
+//
+//    return {
+//        totalCentroids,
+//        totalPM25,
+//        totalPM10
+//    };
+//}
 
-    centroidMarkers.forEach(marker => {
-        if (marker.sensorData) {
-            totalPM25 += marker.sensorData.pm25;
-            totalPM10 += marker.sensorData.pm10;
+function getCentroidsSummary() {
+    let summary = {
+        totalCentroids: 0,
+        totalPM25: 0,
+        totalPM10: 0,
+        county: {
+            salt: {count: 0, pm25: 0, pm10: 0},
+            web: {count: 0, pm25: 0, pm10: 0},
+            dav: {count: 0, pm25: 0, pm10: 0}
+        },
+        color: {
+            red: {count: 0, pm25: 0, pm10: 0},
+            orange: {count: 0, pm25: 0, pm10: 0},
+            green: {count: 0, pm25: 0, pm10: 0},
+            lightBlue: {count: 0, pm25: 0, pm10: 0}
+        }
+    };
+
+    Object.entries(centroidByColor).forEach(([key, markers]) => {
+        let [county, color] = key.split('_');
+
+        if (colorStates[county] && colorStates[color]) {
+            markers.forEach(marker => {
+                if (marker.sensorData) {
+                    // Update total counts and sums
+                    summary.totalCentroids += 1;
+                    summary.totalPM25 += marker.sensorData.pm25;
+                    summary.totalPM10 += marker.sensorData.pm10;
+
+                    // Update county-specific counts and sums
+                    summary.county[county].count += 1;
+                    summary.county[county].pm25 += marker.sensorData.pm25;
+                    summary.county[county].pm10 += marker.sensorData.pm10;
+
+                    // Update color-specific counts and sums
+                    summary.color[color].count += 1;
+                    summary.color[color].pm25 += marker.sensorData.pm25;
+                    summary.color[color].pm10 += marker.sensorData.pm10;
+                }
+            });
         }
     });
 
-    return {
-        totalCentroids,
-        totalPM25,
-        totalPM10
-    };
+    return summary;
 }
+
+
 
 
 // clear all markers
@@ -892,9 +901,13 @@ function resetButtonStates() {
 
 function updateJustGraph() {
     let url;
+    console.log(getCentroidsSummary());
+    
     if (currentGraphType === 'category') {
         url = `/api/summary_sensor?begin_date=${startDate}&end_date=${endDate}&red=${colorStates.red}&orange=${colorStates.orange}&green=${colorStates.green}&lightBlue=${colorStates.lightBlue}&salt=${colorStates.salt}&web=${colorStates.web}&dav=${colorStates.dav}`;
     } else if (currentGraphType === 'county') {
+        //getCentroidsSummary() banana
+
         url =
             `/api/county_avg?begin_date=${startDate}&end_date=${endDate}&red=${colorStates.red}&orange=${colorStates.orange}&green=${colorStates.green}&lightBlue=${colorStates.lightBlue}&salt=${colorStates.salt}&web=${colorStates.web}&dav=${colorStates.dav}`;
     } else {
@@ -1116,6 +1129,7 @@ document.getElementById('categoryGraphButton').addEventListener('click', functio
 document.getElementById('countyGraphButton').addEventListener('click', function() {
     currentGraphType = 'county';
     updateGraph('county');
+    
 });
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -1225,9 +1239,10 @@ document.getElementById('toggleWeb').addEventListener('click', () => {
     toggleColorStateAndRefreshMap('web','county')
     // Refresh graph based on current graph type
     updateJustGraph();
+    
 });
 
-// Example for one button, repeat for others
+//
 document.getElementById('toggleDav').addEventListener('click', () => {
     // Update button appearance
     toggleColorStateAndRefreshMap('dav','county')
