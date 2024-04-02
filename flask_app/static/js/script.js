@@ -54,7 +54,7 @@ document.addEventListener('DOMContentLoaded', function() {
     loadCentroidData(() => {
         loadGeoJSONLayer(map);
     });
-    fetchDateRangeAndInitializeSlider(map);
+    
     updateButtonStyle('red');
     updateButtonStyle('orange');
     updateButtonStyle('green');
@@ -62,6 +62,8 @@ document.addEventListener('DOMContentLoaded', function() {
     updateButtonStyle('salt');
     updateButtonStyle('web');
     updateButtonStyle('dav');
+    fetchDateRangeAndInitializeSlider(map);
+    
 });
 
 
@@ -74,6 +76,7 @@ function initializeMap() {
     }).addTo(map);
     map.createPane('markerPane').style.zIndex = 650;
     return map;
+    
 }
 
 // Function to get color based on lowmod_pct
@@ -168,7 +171,7 @@ function fetchDateRangeAndInitializeSlider(map) {
         .then(data => {
             dateArray = data.map(item => item.date); // Update the global dateArray
             initializeDateSlider(dateArray, map);
-            document.getElementById('updateSensorsButton').click();
+            //document.getElementById('updateSensorsButton').click();
         })
         .catch(error => console.error('Error fetching date range:', error));
 }
@@ -217,7 +220,7 @@ function updateSensors(startDate, endDate, map) {
     clearMarkers();
     clearAllCentroidMarkers();
     
-    const url = `/api/summary_sensor?begin_date=${startDate}&end_date=${endDate}&red=${colorStates.red}&orange=${colorStates.orange}&green=${colorStates.green}&lightBlue=${colorStates.lightBlue}&salt=${colorStates.salt}&web=${colorStates.web}&dav=${colorStates.dav}`;
+    const url = `/api/summary_sensor?begin_date=${startDate}&end_date=${endDate}&red=${colorStates.red}&orange=${colorStates.orange}&green=${colorStates.green}&lightBlue=${colorStates.lightBlue}&salt=${colorStates.salt}&web=${colorStates.web}&dav=${colorStates.dav}&r0=0&r1=0&r2=0&o0=0&o1=0&o2=0&b0=0&b1=0&b2=0&g0=0&g1=0&g2=0`;
     console.log(startDate)
     console.log(endDate)
     fetch(url)
@@ -232,7 +235,6 @@ function updateSensors(startDate, endDate, map) {
                 document.getElementById('sensorTitle').innerHTML = `<h4>Average ${activeMetric} Levels <span style="font-size: smaller;">(${formatDateString(startDate)} to ${formatDateString(endDate)}</span>)</h4>`;
             }
 
-;
         })
         .catch(error => console.error('Error fetching sensor data:', error));
 }
@@ -406,26 +408,7 @@ function updateAllMarkerContents() {
     });
 }
 
-// Update sensor data based on current dates and map state
-function refreshSensorData() {
-    // Reset all color buttons to true/pushed state
-    Object.keys(colorStates).forEach(color => {
-        colorStates[color] = true; // Set each color state to true
-        updateButtonStyle(color); // Update button styles to reflect the pushed state
-    });
 
-    updateDatesFromSlider();
-    clearMarkers(); // Clear existing markers before fetching new data
-    clearAllCentroidMarkers();
-    updateSensors(startDate, endDate, map); // Fetch and display new sensor data
-}
-
-// Call this function after loading new sensor data:
-document.getElementById('updateSensorsButton').addEventListener('click', function() {
-    resetButtonStates(); // Ensure this is called to reset states as needed
-    refreshSensorData(); // Load new data and refresh UI accordingly
-    
-});
 
 //------------------------------- ENDish ADD SENSORS -----------------------------
 
@@ -532,10 +515,10 @@ function toggleCentroidsByColor(color, show,theSplitType) {
 }
 
 function updateAllCentroidContents() {
-    console.log('double wham') // !!!!!!!!!!!!! start here
+
     Object.keys(centroidByColor).forEach(colorKey => {
         centroidByColor[colorKey].forEach(marker => {
-            console.log(marker)
+
             let sensor = marker.sensorData; // Retrieve the stored sensor data
             let displayValue = activeMetric === 'pm2.5' ? sensor.pm25 : sensor.pm10;
             let displayValueRounded = Math.round(displayValue);
@@ -635,6 +618,7 @@ function onEachFeature(feature, layer, map) {
                     map.removeLayer(centroidByColor[color][existingMarkerIndex]);
                     centroidByColor[color].splice(existingMarkerIndex, 1);
                     console.log("Existing marker removed.");
+                    updateJustGraph();
                     return; // Stop execution to not add a new marker
                 }
 
@@ -674,9 +658,14 @@ function onEachFeature(feature, layer, map) {
 
                     // Add the new marker to the appropriate category array
                     centroidByColor[color].push(newMarker);
-                    if (colorStates[county] == true && colorStates[feature.properties.category] == true) {
+                    theColor = feature.properties.category;
+                    if (theColor=='blue'){
+                        theColor='lightBlue'
+                    }
+                    if (colorStates[county] == true && colorStates[theColor] == true) {
                         newMarker.addTo(map);
                     }
+                    updateJustGraph();
                 })
                 .catch(error => console.error('Error fetching prediction data:', error));
             }
@@ -685,66 +674,6 @@ function onEachFeature(feature, layer, map) {
 }
 
 
-
-//function updateCentroidMarkerContents() {
-//    centroidMarkers.forEach(marker => {
-//        const sensorData = marker.sensorData;
-//        const displayValue = activeMetric === 'pm2.5' ? sensorData.pm25 : sensorData.pm10;
-//
-//        var htmlContent = `<div class='custom-icon'>` +
-//                          `<img src="static/js/pinAdded.png" style="width:46.2px; height:53.2px;">` +
-//                          `<span class='sensor-value'>${displayValue}</span>` +
-//                          `</div>`;
-//
-//        var customIcon = L.divIcon({
-//            html: htmlContent,
-//            className: '',
-//            iconSize: [46.2, 53.2],
-//            iconAnchor: [16.5, 37],
-//            popupAnchor: [0, -38]
-//        });
-//
-//        marker.setIcon(customIcon);
-//
-//        // update the popup content as well
-//        let popupContent = `<b>Sensor ID:</b> ${sensorData.objectID}<br>` +
-//                           `<b>PM2.5 Value:</b> ${sensorData.pm25}<br>` +
-//                           `<b>PM10 Value:</b> ${sensorData.pm10}`;
-//        marker.setPopupContent(popupContent);
-//    });
-//}
-
-// use this function for updating graphs
-
-//function getCentroidsSummary() {
-//    let totalCentroids = 0;
-//    let totalPM25 = 0;
-//    let totalPM10 = 0;
-//
-//    // Iterate over each category in centroidByColor
-//    Object.entries(centroidByColor).forEach(([category, markers]) => {
-//        // Split the category to get the county and the color
-//        let [county, color] = category.split("_");
-//
-//        // Check if this category is currently active
-//        if (colorStates[county] && colorStates[color]) {
-//            totalCentroids += markers.length; // Add the count of markers in this category
-//
-//            markers.forEach(marker => {
-//                if (marker.sensorData) {
-//                    totalPM25 += marker.sensorData.pm25;
-//                    totalPM10 += marker.sensorData.pm10;
-//                }
-//            });
-//        }
-//    });
-//
-//    return {
-//        totalCentroids,
-//        totalPM25,
-//        totalPM10
-//    };
-//}
 
 function getCentroidsSummary() {
     let summary = {
@@ -884,14 +813,39 @@ function formatDateString(dateString) {
     return `${month}-${day}-${year}`;
 }
 
+// Call this function after loading new sensor data:
+document.getElementById('updateSensorsButton').addEventListener('click', function() {
+    resetButtonStates(); // Ensure this is called to reset states as needed
+    refreshSensorData(); // Load new data and refresh UI accordingly
+    
+    
+});
+
 function resetButtonStates() {
     Object.keys(colorStates).forEach(color => {
         colorStates[color] = true; // Set each color state to true initially
         updateButtonStyle(color);
-            // Trigger click event on the first toggle button to activate PM2.5 on page load
-        document.getElementById('toggleButton1').click();
-
+        
     });
+
+    currentGraphType = 'category';
+
+}
+
+// Update sensor data based on current dates and map state
+function refreshSensorData() {
+    // Reset all color buttons to true/pushed state
+    Object.keys(colorStates).forEach(color => {
+        colorStates[color] = true; // Set each color state to true
+        updateButtonStyle(color); // Update button styles to reflect the pushed state
+    });
+
+    updateDatesFromSlider();
+    clearMarkers(); // Clear existing markers before fetching new data
+    clearAllCentroidMarkers();
+    updateSensors(startDate, endDate, map); // Fetch and display new sensor data
+    //document.getElementById('updateSensorsButton').click();
+    
 }
 
 // -------------END STYLE -----------------------------------
@@ -900,16 +854,56 @@ function resetButtonStates() {
 // BAR GRAPHS ----------------------------------------------
 
 function updateJustGraph() {
+    console.log('graphB')
     let url;
-    console.log(getCentroidsSummary());
     
+    // county ai sensors
+    c = getCentroidsSummary();
+    s = c.county.salt
+    s0 = s.count
+    s1 = s.pm25
+    s2 = s.pm10
+
+    w = c.county.web
+    w0 = w.count
+    w1 = w.pm25
+    w2 = w.pm10
+    
+    d = c.county.dav
+    d0 = d.count
+    d1 = d.pm25
+    d2 = d.pm10
+    
+    // category ai sensors
+    r = c.color.red
+    r0 = r.count
+    r1 = r.pm25
+    r2 = r.pm10
+    
+    o = c.color.orange
+    o0 = o.count
+    o1 = o.pm25
+    o2 = o.pm10
+
+    b = c.color.lightBlue
+    b0 = b.count
+    b1 = b.pm25
+    b2 = b.pm10
+    
+    g = c.color.green
+    g0 = g.count
+    g1 = g.pm25
+    g2 = g.pm10
+
+
+
     if (currentGraphType === 'category') {
-        url = `/api/summary_sensor?begin_date=${startDate}&end_date=${endDate}&red=${colorStates.red}&orange=${colorStates.orange}&green=${colorStates.green}&lightBlue=${colorStates.lightBlue}&salt=${colorStates.salt}&web=${colorStates.web}&dav=${colorStates.dav}`;
+        url = `/api/summary_sensor?begin_date=${startDate}&end_date=${endDate}&red=${colorStates.red}&orange=${colorStates.orange}&green=${colorStates.green}&lightBlue=${colorStates.lightBlue}&salt=${colorStates.salt}&web=${colorStates.web}&dav=${colorStates.dav}&r0=${r0}&r1=${r1}&r2=${r2}&o0=${o0}&o1=${o1}&o2=${o2}&b0=${b0}&b1=${b1}&b2=${b2}&g0=${g0}&g1=${g1}&g2=${g2}`;
     } else if (currentGraphType === 'county') {
         //getCentroidsSummary() banana
 
         url =
-            `/api/county_avg?begin_date=${startDate}&end_date=${endDate}&red=${colorStates.red}&orange=${colorStates.orange}&green=${colorStates.green}&lightBlue=${colorStates.lightBlue}&salt=${colorStates.salt}&web=${colorStates.web}&dav=${colorStates.dav}`;
+            `/api/county_avg?begin_date=${startDate}&end_date=${endDate}&red=${colorStates.red}&orange=${colorStates.orange}&green=${colorStates.green}&lightBlue=${colorStates.lightBlue}&salt=${colorStates.salt}&web=${colorStates.web}&dav=${colorStates.dav}&s0=${s0}&s1=${s1}&s2=${s2}&w0=${w0}&w1=${w1}&w2=${w2}&d0=${d0}&d1=${d1}&d2=${d2}`;
     } else {
         console.error('Unknown graph type');
         return;
@@ -1094,12 +1088,54 @@ function calculateCountyGraph(data_sensor) {
 
 
 function updateGraph(graphType) {
+    console.log('graphA')
     // Determine the URL based on graph type
     let url;
+    c = getCentroidsSummary();
+    s = c.county.salt
+    s0 = s.count
+    s1 = s.pm25
+    s2 = s.pm10
+
+    w = c.county.web
+    w0 = w.count
+    w1 = w.pm25
+    w2 = w.pm10
+    
+    d = c.county.dav
+    d0 = d.count
+    d1 = d.pm25
+    d2 = d.pm10
+    
+    // category ai sensors
+    r = c.color.red
+    r0 = r.count
+    r1 = r.pm25
+    r2 = r.pm10
+    
+    o = c.color.orange
+    o0 = o.count
+    o1 = o.pm25
+    o2 = o.pm10
+
+    b = c.color.lightBlue
+    b0 = b.count
+    b1 = b.pm25
+    b2 = b.pm10
+    
+    g = c.color.green
+    g0 = g.count
+    g1 = g.pm25
+    g2 = g.pm10
+
+
+
+    
     if (graphType === 'category') {
-        url = `/api/summary_sensor?begin_date=${startDate}&end_date=${endDate}&red=${colorStates.red}&orange=${colorStates.orange}&green=${colorStates.green}&lightBlue=${colorStates.lightBlue}&salt=${colorStates.salt}&web=${colorStates.web}&dav=${colorStates.dav}`;
+        url = `/api/summary_sensor?begin_date=${startDate}&end_date=${endDate}&red=${colorStates.red}&orange=${colorStates.orange}&green=${colorStates.green}&lightBlue=${colorStates.lightBlue}&salt=${colorStates.salt}&web=${colorStates.web}&dav=${colorStates.dav}&r0=${r0}&r1=${r1}&r2=${r2}&o0=${o0}&o1=${o1}&o2=${o2}&b0=${b0}&b1=${b1}&b2=${b2}&g0=${g0}&g1=${g1}&g2=${g2}`;
     } else if (graphType === 'county') {
-        url = `/api/county_avg?begin_date=${startDate}&end_date=${endDate}&red=${colorStates.red}&orange=${colorStates.orange}&green=${colorStates.green}&lightBlue=${colorStates.lightBlue}&salt=${colorStates.salt}&web=${colorStates.web}&dav=${colorStates.dav}`;
+        url =
+            `/api/county_avg?begin_date=${startDate}&end_date=${endDate}&red=${colorStates.red}&orange=${colorStates.orange}&green=${colorStates.green}&lightBlue=${colorStates.lightBlue}&salt=${colorStates.salt}&web=${colorStates.web}&dav=${colorStates.dav}&s0=${s0}&s1=${s1}&s2=${s2}&w0=${w0}&w1=${w1}&w2=${w2}&d0=${d0}&d1=${d1}&d2=${d2}`;
     } else {
         console.error('Invalid graph type specified');
         return;
@@ -1156,6 +1192,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('toggleButton1').addEventListener('click', function() {
         activeMetric = 'pm2.5';
         toggleButtonStates('toggleButton1');
+        
         updateGraph(currentGraphType);
         updateAllMarkerContents();
         updateAllCentroidContents();
@@ -1210,6 +1247,7 @@ document.getElementById('dateRange').addEventListener('change', function() {
 
 document.getElementById('toggleRed').addEventListener('click', () => {
     toggleColorStateAndRefreshMap('red','color')
+    
     updateJustGraph();
 });
 document.getElementById('toggleOrange').addEventListener('click', () => {

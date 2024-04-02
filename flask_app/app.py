@@ -48,7 +48,20 @@ def get_latest():
         web = request.args.get('web') == 'true'
         dav = request.args.get('dav') == 'true'
         
-        return summary_s.return_table(begin_date, end_date, red, orange, green, lightBlue,salt,web,dav).to_json(orient='records')
+        r0 = float(request.args.get('r0'))
+        r1 = float(request.args.get('r1'))
+        r2 = float(request.args.get('r2'))
+        o0 = float(request.args.get('o0'))
+        o1 = float(request.args.get('o1'))
+        o2 = float(request.args.get('o2'))
+        b0 = float(request.args.get('b0'))
+        b1 = float(request.args.get('b1'))
+        b2 = float(request.args.get('b2'))
+        g0 = float(request.args.get('g0'))
+        g1 = float(request.args.get('g1'))
+        g2 = float(request.args.get('g2'))
+        
+        return summary_s.return_table(begin_date, end_date, red, orange, green, lightBlue,salt,web,dav,r0,r1,r2,o0,o1,o2,b0,b1,b2,g0,g1,g2).to_json(orient='records')
     except Exception as e:
         traceback_str = ''.join(traceback.format_exception(etype=type(e), value=e, tb=e.__traceback__))
         app.logger.error(f"Error: {traceback_str}")
@@ -61,19 +74,28 @@ def get_latest_county():
         # Retrieve query parameters
         begin_date = request.args.get('begin_date')
         end_date = request.args.get('end_date')
-        
         # Fetching the color states
         red = request.args.get('red') == 'true'
         orange = request.args.get('orange') == 'true'
         green = request.args.get('green') == 'true'
         lightBlue = request.args.get('lightBlue') == 'true'
-        
         # Fetching the county
         salt = request.args.get('salt') == 'true'
         web = request.args.get('web') == 'true'
         dav = request.args.get('dav') == 'true'
+        # Fetch County Counts
+        s0 = float(request.args.get('s0'))
+        s1 = float(request.args.get('s1'))
+        s2 = float(request.args.get('s2'))
+        w0 = float(request.args.get('w0'))
+        w1 = float(request.args.get('w1'))
+        w2 = float(request.args.get('w2'))
+        d0 = float(request.args.get('d0'))
+        d1 = float(request.args.get('d1'))
+        d2 = float(request.args.get('d2'))
         
-        return summary_s.return_county(begin_date, end_date, red, orange, green, lightBlue,salt,web,dav).to_json(orient='records')
+        #return s0
+        return summary_s.return_county(begin_date, end_date, red, orange, green, lightBlue,salt,web,dav,s0,s1,s2,w0,w1,w2,d0,d1,d2).to_json(orient='records')
     except Exception as e:
         traceback_str = ''.join(traceback.format_exception(etype=type(e), value=e, tb=e.__traceback__))
         app.logger.error(f"Error: {traceback_str}")
