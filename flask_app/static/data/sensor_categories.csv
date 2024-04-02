@@ -1,0 +1,223 @@
+sensor_id,category,county
+77,red,Salt Lake County
+443,red,Weber County
+525,green,Salt Lake County
+984,blue,Salt Lake County
+992,green,Salt Lake County
+3238,blue,Salt Lake County
+3388,green,Salt Lake County
+4553,blue,Davis County
+5174,green,Weber County
+5372,green,Salt Lake County
+5408,blue,Davis County
+5454,blue,Weber County
+5460,orange,Salt Lake County
+5486,green,Salt Lake County
+5700,green,Weber County
+5742,blue,Salt Lake County
+5808,green,Salt Lake County
+6018,blue,Davis County
+6050,green,Salt Lake County
+6054,orange,Salt Lake County
+6080,green,Davis County
+6274,green,Salt Lake County
+6276,orange,Salt Lake County
+6288,red,Salt Lake County
+6298,green,Davis County
+6314,orange,Salt Lake County
+6322,green,Salt Lake County
+6332,blue,Davis County
+6346,red,Salt Lake County
+6348,green,Davis County
+6352,green,Salt Lake County
+6356,orange,Salt Lake County
+6360,orange,Salt Lake County
+6434,orange,Salt Lake County
+6602,green,Salt Lake County
+6604,green,Weber County
+6622,green,Salt Lake County
+7152,blue,Weber County
+7206,green,Salt Lake County
+7466,green,Weber County
+7578,green,Weber County
+7858,blue,Weber County
+7860,blue,Weber County
+8968,blue,Weber County
+9066,blue,Weber County
+9566,blue,Salt Lake County
+10794,orange,Salt Lake County
+13075,green,Salt Lake County
+13227,green,Salt Lake County
+13235,green,Salt Lake County
+13237,blue,Davis County
+13239,blue,Davis County
+13253,green,Davis County
+13273,green,Salt Lake County
+13279,green,Salt Lake County
+13283,blue,Davis County
+13307,orange,Salt Lake County
+13311,orange,Salt Lake County
+13313,green,Salt Lake County
+15817,orange,Davis County
+15825,red,Davis County
+15827,blue,Davis County
+15829,green,Davis County
+15835,green,Davis County
+15945,blue,Salt Lake County
+16119,blue,Davis County
+17949,orange,Salt Lake County
+18021,orange,Salt Lake County
+18029,orange,Davis County
+18031,orange,Salt Lake County
+18069,red,Salt Lake County
+18115,blue,Salt Lake County
+18169,orange,Salt Lake County
+18191,orange,Salt Lake County
+18237,green,Salt Lake County
+18249,green,Salt Lake County
+18251,orange,Salt Lake County
+18259,green,Salt Lake County
+18319,green,Salt Lake County
+18321,green,Salt Lake County
+18341,blue,Davis County
+18375,blue,Salt Lake County
+18469,green,Salt Lake County
+20897,orange,Salt Lake County
+20957,blue,Salt Lake County
+22647,blue,Salt Lake County
+22955,blue,Salt Lake County
+23587,green,Salt Lake County
+24441,blue,Davis County
+25309,blue,Davis County
+28675,orange,Salt Lake County
+30855,orange,Salt Lake County
+30887,blue,Davis County
+30917,blue,Davis County
+30943,orange,Salt Lake County
+30953,blue,Davis County
+30955,orange,Salt Lake County
+30967,blue,Davis County
+30991,orange,Salt Lake County
+31013,orange,Salt Lake County
+32671,blue,Davis County
+33071,green,Davis County
+33077,orange,Davis County
+33097,green,Davis County
+33163,green,Davis County
+33191,green,Davis County
+34863,orange,Salt Lake County
+34961,orange,Davis County
+35003,blue,Davis County
+36145,green,Davis County
+36161,orange,Salt Lake County
+36345,blue,Weber County
+37465,orange,Salt Lake County
+37467,green,Davis County
+37481,blue,Davis County
+37499,blue,Davis County
+37727,blue,Salt Lake County
+40713,blue,Davis County
+41419,blue,Davis County
+42097,green,Salt Lake County
+42529,orange,Salt Lake County
+43021,blue,Salt Lake County
+43883,green,Salt Lake County
+44103,green,Davis County
+44157,blue,Salt Lake County
+44237,blue,Salt Lake County
+45627,green,Weber County
+46295,green,Salt Lake County
+46773,orange,Salt Lake County
+46777,orange,Salt Lake County
+46799,green,Davis County
+46873,orange,Salt Lake County
+46875,orange,Davis County
+46881,orange,Salt Lake County
+47171,green,Salt Lake County
+49061,blue,Salt Lake County
+49155,orange,Salt Lake County
+53407,orange,Salt Lake County
+62211,orange,Salt Lake County
+73051,orange,Davis County
+81037,red,Salt Lake County
+82649,orange,Davis County
+83505,green,Salt Lake County
+83563,green,Weber County
+83565,green,Davis County
+83919,green,Salt Lake County
+84019,orange,Salt Lake County
+84893,blue,Salt Lake County
+85361,blue,Davis County
+85765,green,Davis County
+86147,orange,Salt Lake County
+86227,green,Davis County
+89717,green,Salt Lake County
+90285,red,Salt Lake County
+91661,green,Salt Lake County
+91975,green,Salt Lake County
+94765,blue,Salt Lake County
+97391,orange,Salt Lake County
+100865,blue,Salt Lake County
+101025,green,Salt Lake County
+102166,green,Salt Lake County
+104574,red,Salt Lake County
+105030,blue,Salt Lake County
+106632,blue,Salt Lake County
+108126,blue,Weber County
+108132,green,Weber County
+108192,red,Weber County
+108206,orange,Davis County
+109530,blue,Salt Lake County
+110710,blue,Davis County
+111526,green,Davis County
+112862,blue,Davis County
+112884,blue,Salt Lake County
+113612,orange,Salt Lake County
+114467,blue,Davis County
+114549,blue,Davis County
+115273,red,Davis County
+120419,red,Salt Lake County
+120493,green,Davis County
+120861,blue,Salt Lake County
+122011,blue,Salt Lake County
+122091,blue,Salt Lake County
+125011,green,Salt Lake County
+126559,red,Davis County
+127577,green,Salt Lake County
+129149,green,Salt Lake County
+129167,blue,Salt Lake County
+129169,green,Salt Lake County
+129303,orange,Salt Lake County
+129333,orange,Salt Lake County
+129335,green,Salt Lake County
+129337,orange,Salt Lake County
+129689,green,Salt Lake County
+129691,orange,Salt Lake County
+129727,orange,Salt Lake County
+131045,green,Salt Lake County
+134432,green,Salt Lake County
+134552,red,Salt Lake County
+141894,green,Salt Lake County
+148045,green,Salt Lake County
+148637,green,Salt Lake County
+150790,blue,Salt Lake County
+155177,green,Salt Lake County
+156037,orange,Salt Lake County
+156623,green,Salt Lake County
+161605,blue,Salt Lake County
+165997,blue,Salt Lake County
+168215,blue,Salt Lake County
+169779,red,Salt Lake County
+169851,orange,Davis County
+169867,blue,Davis County
+174555,blue,Salt Lake County
+189031,green,Salt Lake County
+194651,orange,Davis County
+196107,blue,Davis County
+199645,green,Salt Lake County
+199845,blue,Salt Lake County
+204009,red,Salt Lake County
+204315,green,Salt Lake County
+207743,blue,Salt Lake County
+208781,green,Weber County
+208783,blue,Weber County
