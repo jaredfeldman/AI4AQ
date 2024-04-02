@@ -1,0 +1,349 @@
+/* style.css */
+
+/* Reset margin and padding for all elements */
+* {
+    margin: 0;
+    padding: 0;
+}
+
+
+body {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    margin: 0px;
+}
+
+header {
+    background: #333;
+    color: purple;
+    padding-top: 30px;
+    min-height: 70px;
+    position: fixed; /* Fix header at the top */
+    width: 100%; /* Ensure it spans the full width */
+    top: 0; /* Position at the very top */
+    z-index: 1030; /* Ensure it stays above other content */
+}
+
+.nav-link {
+    color: #fff;
+    text-decoration: none;
+    text-transform: uppercase;
+    font-size: 16px;
+    left: 20px;
+    top: 10px;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    margin-bottom: 20
+}
+
+
+.main-content {
+    display: flex;
+    flex-direction: row;
+    height: 100vh; /* Adjust height based on header's height */
+    padding-top: 245px;
+}
+
+.map-container {
+    position: relative; /* Establishes positioning context */
+    width: 100%; /* Takes full width */
+    height: 100%; /* Adjusts for header height */
+}
+
+#mapid {
+    width: 100%;
+    height: 100%; /* Fills the container */
+}
+
+
+#dataviz-container{
+    position: fixed;
+    right: 20px; /* Right side of the screen */
+    bottom: 140px; /* Up from the bottom */
+    width: 300px;
+    z-index: 1000; /* Ensure it appears above the map */
+}
+
+#my_dataviz {
+    
+    height: 320px;
+    background-color: rgba(255, 255, 255, 0.8); 
+    padding: 10px;
+    border-radius: 5px; /* Optional: Rounded corners for the box */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    
+}
+
+#my_dataviz_buttons{
+    width: 300px;
+    height: 40px;
+    border-radius: 8px;
+    top: -10px;
+    right: 0px;
+}
+
+.button-group-colors {
+    position: absolute;
+    top: 200px;
+    right: 0px;
+    width: 300px;
+    z-index: 1000;
+}
+
+
+
+/* Style for the buttons inside the button group */
+#pmButtons .btn {
+    border-radius: 0; /* Remove border-radius */
+    margin: 0; /* Remove margins */
+    border: none; /* Optional: remove borders */
+}
+
+
+#pmButtons .btn + .btn {
+    margin-left: -10px; /* Overlap borders */
+}
+
+/* Optional: Adjust the first and last button to have rounded corners if desired */
+#pmButtons .btn:first-child {
+    border-top-left-radius: 0px;
+    border-bottom-left-radius: 0px;
+}
+
+#pmButtons .btn:last-child {
+    border-top-right-radius: 0px;
+    border-bottom-right-radius: 0px;
+}
+
+
+.leaflet-control-container { position: absolute; right: 56px }
+
+.number-icon {
+    margin-top: -7px; /* Adjust based on the size of circle */
+    margin-left: -2px; /* Center the text horizontally */
+    font-size: 16px;
+    line-height: 1; /* Ensures the text is vertically centered */
+}
+
+#slider-button-container {
+    position: fixed;
+    bottom: 5px;
+    left: 60px;
+    display: flex;
+    width: 99%;
+    align-items: center; /* This ensure vertical alignment */
+    z-index: 1000; /* Ensure it's above the map */
+}
+
+#radio_select{
+    position: relative;
+    bottom: 30px;
+    font-size: 14px;
+    left: 10px;
+    color: white;
+}
+
+#updateSensorsButton {
+    position: relative;
+    top: 0px;
+    left: -90px;
+    width: 100px;
+}
+
+
+#date-slider {
+    flex-grow: 1; /* Slider takes up as much space as possible */
+    margin-right: 50px; /* Spacing between slider and button */
+    bottom: 0px;
+}
+
+#colored-bar {
+    position: fixed;
+    bottom: 0; /* Aligns to the bottom of the viewport */
+    left: 0;
+    width: 100%; /* Full width of the viewport */
+    height: 80px; /* Height of the bar */
+    background-color: #333; /* Color of the bar */
+    z-index: 999;
+}
+
+
+#overlay-box {
+    position: absolute;
+    top: 15px;
+    left: 300px;
+    background-color: rgba(255, 255, 255, 0.8); /* Semi-transparent white */
+    padding: 20px;
+    border-radius: 5px;
+    width: 500px;
+    height: 50px;
+    z-index: 1000; /* Ensure it appears above the map */
+}
+
+
+
+#info {
+    padding: 10px 15px; /* Adds padding inside the div */
+    margin: 0px; /* Adds some space outside the div */
+    background-color: #f0f0f0; /* Light grey background */
+    border: 1px solid #ccc; /* Light grey border */
+    font-family: 'Arial', sans-serif; /* Typography */
+    font-size: 16px; /* Text size */
+    color: #333; /* Text color */
+    text-align: left; /* Center the text */
+    height: 400px;
+    position: relative; /* Position it absolutely within a relative container */
+    bottom: -700px; /* Distance from the top of the container */
+    left: 00px;; /* Distance from the right of the container */
+    z-index: 1000; /* Ensure it's above other elements */
+}
+
+
+/* Sidebar CSS - Adjust to slide from the left */
+#sidebar {
+    width: 300px; /* Adjust the width as necessary */
+    height: 100%; /* Full height */
+    position: fixed;
+    top: 0; /* Align to the top */
+    left: -3000px; /* Initially hide the sidebar off-screen to the left */
+    background-color: white;
+    z-index: 900;
+    transition: left 0.5s; /* Smooth transition for sliding effect */
+}
+
+/* Class to slide in the sidebar */
+#sidebar.active {
+    left: 0; /* Slide into view */
+}
+
+/* Adjust the main container padding to make space for the sidebar */
+.container-fluid {
+    padding-top: 0px; /* Adjust based on the sidebar's height */
+    transition: all 0.4s;
+}
+
+.custom-icon {
+    position: relative;
+    text-align: center;
+    width: 46.2px; /* Match the width of your marker */
+}
+
+.sensor-value {
+    position: absolute;
+    width: 100%;
+    left: 0px;
+    bottom: 17px; /* Adjust position to fit over marker image */
+    font-size: 19px; 
+    color: white;
+    font-weight: bold;
+}
+
+#title-adjust {
+    position: relative;
+    top: 4px; /* Move up */
+}
+
+
+#toggleSalt.active { background-color: #66cc99; color: white; }
+#toggleWeb.active { background-color: #ff9966; color: white; }
+#toggleDav.active { background-color: #9999cc; color: white; }
+#toggleLightBlue.active { background-color: #33ccff; color: white; }
+#toggleRed.active { background-color: red; color: white; }
+#toggleOrange.active { background-color: orange; color: white; }
+#toggleGreen.active { background-color: green; color: white; }
+#toggleLightBlue.active { background-color: #33ccff; color: white; }
+
+
+.btn-group {
+    right: 50px;
+    top: 40px;
+    width: 500px;
+    display: flex; /* lay out the direct children of this container side by side */
+    flex-wrap: wrap; /* Allows buttons to wrap to the next line if the container's width is too small */
+    gap: 10px;
+}
+
+.color-button, #colorToggle {
+    flex: 0 1 auto; /* Allows buttons to grow and shrink but not beyond their content's size */
+    cursor: pointer; /* Changes the mouse cursor to indicate clickable items */
+    
+}
+
+/* Example of a specific button styling */
+#colorToggle {
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 5px;
+}
+
+#colorToggle {
+    position: fixed;
+    top: 200px;
+    left: 100px;
+    display: flex;
+    width: 70px;
+    z-index: 1000;
+}
+
+#toggle {
+    position: fixed;
+    top: 200px;
+    left: 10px;
+    display: flex;
+    width: 80px;
+    z-index: 1000; /* Ensure it's above the map */
+}
+
+
+.color-button {
+    border: none;
+    padding: 8px 12px;
+    border-radius: 0px;
+    margin: -5px;
+}
+
+#toggleButtonPM {
+    position: absolute;
+    top:-35px;
+    left:-10px;
+    width: 190px;
+    height:35px;
+    z-index:1000px;
+    background: gray;
+    color: white;
+}
+
+#toggleButtonPM2 {
+    position: absolute;
+    top:-35px;
+    left:193px;
+    width: 222px;
+    height:35px;
+    z-index:1000px;
+    background: gray;
+    color: white;
+}
+
+#toggleButtonPM3 {
+    position: absolute;
+    top:-35px;
+    left:418px;
+    width: 242px;
+    height:35px;
+    z-index:1000px;
+    background: gray;
+    color: white;
+}
+
+/* Style for the button group container */
+#pmButtons {
+    position: fixed;
+    right: 555px; /* Right side of the screen */
+    top: 283px; /* Up from the bottom */
+    z-index: 1000;
+    width: 180px;
+}
+
+
