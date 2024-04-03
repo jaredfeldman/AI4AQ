@@ -10,7 +10,7 @@ import sqlite3
 import traceback
 from tensorflow.keras.models import load_model
 import numpy as np
-
+import os
 
 ## import functions
 #from get_latest_sensor_test import return_table
@@ -122,7 +122,7 @@ def get_sensor_linear():
 def get_date_range():
 
     # Pass the dates to function
-    return pd.read_csv('static/data/date_range.csv').to_json(orient='records')
+    return pd.read_csv('/app/flask_app/static/data/date_range.csv').to_json(orient='records')
     
 
 
