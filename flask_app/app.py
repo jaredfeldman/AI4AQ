@@ -129,7 +129,7 @@ def get_date_range():
 
 # Temporarily turn OFF MOdel!!!!!!!!!!!!!!!!!!!!!!!!!!
 # test model
-model = load_model('static/data/test_model.h5')
+#model = load_model('static/data/test_model.h5')
 
 @app.route("/api/predict", methods=["GET"])
 def predict_AQ():
@@ -164,7 +164,7 @@ def predict_AQ():
                
 
 if __name__=="__main__":
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)
     
 
 
