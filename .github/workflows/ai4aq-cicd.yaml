@@ -1,27 +1,25 @@
 name: AI4AQ CI/CD Pipeline
 
-# Defines when the workflow should be triggered
 on:
   push:
     branches:
-      - main # In this case, trigger the workflow on pushes to the main branch
+      - main
   pull_request:
     branches:
-      - main # Also trigger on PRs to main
+      - main
 
-# Holds all jobs that will be executed in the workflow
 jobs:
   build:
-    runs-on: ubuntu-latest  # Operating system for the job
+    runs-on: ubuntu-latest
     
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2  # Use the checkout action to fetch the repository's code
+        uses: actions/checkout@v2
       
       - name: Build Docker image
         run: docker build -t jaredfeldman/ai4aq:ai4aq-app .
-
-      - name: Login to Ducker Hub
+      
+      - name: Login to Docker Hub
         run: echo "${{ secrets.DOCKER_PAT }}" | docker login --username jaredfeldman --password-stdin
       
       - name: Push Docker image to Docker Hub
