@@ -1,0 +1,26 @@
+name: AI4AQ CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      
+      - name: Build Docker image
+        run: docker build -t jaredfeldman/ai4aq:ai4aq-app .
+      
+      - name: Login to Docker Hub
+        run: echo "${{ secrets.DOCKER_PAT }}" | docker login --username jaredfeldman --password-stdin
+      
+      - name: Push Docker image to Docker Hub
+        run: docker push jaredfeldman/ai4aq:ai4aq-app
