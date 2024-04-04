@@ -24,20 +24,3 @@ jobs:
       
       - name: Push Docker image to Docker Hub
         run: docker push jaredfeldman/ai4aq:ai4aq-app
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-  
-      - name: Deploy to Elastic Beanstalk Environment
-        uses: einaregilsson/beanstalk-deploy@v1
-        with:
-          aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_Key }}
-          application_name: AI4AQ
-          environment_name: AI4AQ-env
-          aws_region: us-west-2
-          version_label: ${{github.run_number}}
