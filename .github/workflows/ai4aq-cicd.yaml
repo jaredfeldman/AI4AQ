@@ -40,4 +40,4 @@ jobs:
           application_name: "AI4AQ"
           environment_name: "AI4AQ-env"
           region: "us-west-2"
-          version_label: ${{ steps.generate_version_label.outputs.stdout }}
+          version_label: ${{github.run_number}}
