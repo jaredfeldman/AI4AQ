@@ -39,4 +39,4 @@ jobs:
           aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_Key }}
           application_name: "AI4AQ"
           environment_name: "AI4AQ-env"
-          region: "us-west-2"
+          aws_region: "us-west-2"
