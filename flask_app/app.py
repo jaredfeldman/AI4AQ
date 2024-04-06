@@ -10,11 +10,16 @@ import sqlite3
 import traceback
 from tensorflow.keras.models import load_model
 import numpy as np
+import pandas as pd
+from datetime import datetime, timedelta
+from joblib import load
+
 
 
 ## import functions
 #from get_latest_sensor_test import return_table
 import utils.get_summary_sensor as summary_s
+import utils.ai_sensor_model_predict as ai_sensor
 
 app=Flask(__name__)
 
@@ -126,29 +131,36 @@ def get_date_range():
     
 
 
+# Load Model
+model = load_model('static/data/nnn_model_1.h5')
 
-# Temporarily turn OFF MOdel!!!!!!!!!!!!!!!!!!!!!!!!!!
-# test model
-model = load_model('static/data/test_model.h5')
 
 @app.route("/api/predict", methods=["GET"])
 def predict_AQ():
     try:
         # Retrieve values from request and convert them to float
-        pm2 = float(request.args.get("avgPM2"))
-        pm10 = float(request.args.get("avgPM10"))
-#        lat = float(request.args.get("lat"))
-#        lon = float(request.args.get("lng"))
+        #pm2 = float(request.args.get("avgPM2"))
+        #pm10 = float(request.args.get("avgPM10"))
+        lat = float(request.args.get("lat"))
+        lng = float(request.args.get("lng"))
+        the_date = request.args.get("theDate")
         
-        # Ensure the input_value is shaped correctly
-        input_value = np.array([[pm2], [pm10]])  # Shape (1, 2)
+        Xpm = ai_sensor.pm25_predict(lat, lng, the_date)
         
-        # Predict and round the prediction
-        prediction = model.predict(input_value)
-        prediction = np.round(prediction).flatten().tolist()  # Flatten and convert to list
+        Xpm2 = model.predict(Xpm)
+        Xpm2 = np.round(np.expm1(Xpm2)[0])
         
-        # Return the prediction as a JSON response
+        Xpm10 = [20]
+        #Xpm2 = [10]
+        #values = [10., 15.]
+
+#        # Ensure the input_value is shaped correctly
+        input_value = np.array([[Xpm2], [Xpm10]])  # Shape (1, 2)
+#
+        prediction = input_value.flatten().tolist()  # Flatten and convert to list
+
         return jsonify(prediction)
+        #return jsonify(prediction)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 

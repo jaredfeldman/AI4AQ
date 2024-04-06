@@ -623,7 +623,7 @@ function onEachFeature(feature, layer, map) {
                 }
 
                 // Fetch data and add new marker
-                fetch(`/api/predict?lat=${centroid[1]}&lng=${centroid[0]}&avgPM2=1&avgPM10=20`)
+                fetch(`/api/predict?lat=${centroid[1]}&lng=${centroid[0]}&theDate=${startDate}`)
                 .then(response => response.json())
                 .then(data => {
                     const pm25Value = data[0];
