@@ -132,7 +132,8 @@ def get_date_range():
 
 
 # Load Model
-model = load_model('static/data/nnn_model_1.h5')
+model_pm25 = load_model('static/data/nnn_model_1.h5')
+model_pm10 = load_model('static/data/nnn_model_1_pm10.h5')
 
 
 @app.route("/api/predict", methods=["GET"])
@@ -145,17 +146,20 @@ def predict_AQ():
         lng = float(request.args.get("lng"))
         the_date = request.args.get("theDate")
         
-        Xpm = ai_sensor.pm25_predict(lat, lng, the_date)
+        tensor = ai_sensor.pm25_predict(lat, lng, the_date)
         
-        Xpm2 = model.predict(Xpm)
-        Xpm2 = np.round(np.expm1(Xpm2)[0])
+        Xpm25 = model_pm25.predict(tensor)
+        Xpm25 = np.round(np.expm1(Xpm25)[0])
         
-        Xpm10 = [20]
+        Xpm10 = model_pm10.predict(tensor)
+        Xpm10 = np.round(np.expm1(Xpm10)[0])
+        
+        #Xpm10 = [20]
         #Xpm2 = [10]
         #values = [10., 15.]
 
 #        # Ensure the input_value is shaped correctly
-        input_value = np.array([[Xpm2], [Xpm10]])  # Shape (1, 2)
+        input_value = np.array([[Xpm25], [Xpm10]])  # Shape (1, 2)
 #
         prediction = input_value.flatten().tolist()  # Flatten and convert to list
 
