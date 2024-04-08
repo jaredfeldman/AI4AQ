@@ -132,8 +132,11 @@ def get_date_range():
 
 
 # Load Model
-model_pm25 = load_model('static/data/nnn_model_1.h5')
-model_pm10 = load_model('static/data/nnn_model_1_pm10.h5')
+#model_pm25 = load_model('static/data/nnn_model_1.h5')
+#model_pm10 = load_model('static/data/nnn_model_1_pm10.h5')
+
+model_pm25 = load_model('static/data/nnn_model_1_pm_25wind.h5')
+model_pm10 = load_model('static/data/nnn_model_1_pm_10wind.h5')
 
 
 @app.route("/api/predict", methods=["GET"])
