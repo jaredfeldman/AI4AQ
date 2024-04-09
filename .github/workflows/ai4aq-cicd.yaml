@@ -17,7 +17,7 @@ jobs:
         uses: actions/checkout@v2
       
       - name: Build Docker image
-        run: docker build -t jaredfeldman/ai4aq:ai4aq-app .
+        run: docker buildx build -t jaredfeldman/ai4aq:ai4aq-app --platform linux/amd64 --load .
       
       - name: Login to Docker Hub
         run: echo "${{ secrets.DOCKER_PAT }}" | docker login --username jaredfeldman --password-stdin
