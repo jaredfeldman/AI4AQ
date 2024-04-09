@@ -5,10 +5,10 @@ FROM python:3.9
 WORKDIR /app
 
 # Copy the application code and requirements.txt into the container
-COPY flask_app/static/ /app/flask_app/static/
-COPY flask_app/templates/ /app/flask_app/templates/
-COPY flask_app/utils/ /app/flask_app/utils/
-COPY flask_app/app.py /app/flask_app/app.py
+COPY ./flask_app/static/ /app/flask_app/static/
+COPY ./flask_app/templates/ /app/flask_app/templates/
+COPY ./flask_app/utils/ /app/flask_app/utils/
+COPY ./flask_app/app.py /app/flask_app/app.py
 COPY requirements.txt .
 
 # Install dependencies needed for the  application
