@@ -14,8 +14,6 @@ import pandas as pd
 from datetime import datetime, timedelta
 from joblib import load
 
-
-
 ## import functions
 #from get_latest_sensor_test import return_table
 import utils.get_summary_sensor as summary_s
@@ -127,7 +125,7 @@ def get_sensor_linear():
 def get_date_range():
 
     # Pass the dates to function
-    return pd.read_csv('static/data/date_range.csv').to_json(orient='records')
+    return pd.read_csv('/app/flask_app/static/data/date_range.csv').to_json(orient='records')
     
 
 
@@ -137,7 +135,6 @@ def get_date_range():
 
 model_pm25 = load_model('static/data/nnn_model_1_pm_25wind.h5')
 model_pm10 = load_model('static/data/nnn_model_1_pm_10wind.h5')
-
 
 @app.route("/api/predict", methods=["GET"])
 def predict_AQ():
@@ -183,7 +180,7 @@ def predict_AQ():
                
 
 if __name__=="__main__":
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)
     
 
 
