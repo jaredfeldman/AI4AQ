@@ -16,8 +16,11 @@ from joblib import load
 
 ## import functions
 #from get_latest_sensor_test import return_table
-import utils.get_summary_sensor as summary_s
+#import utils.get_summary_sensor as summary_s
 import utils.ai_sensor_model_predict as ai_sensor
+
+from utils.get_summary_sensor import return_county
+from utils.get_summary_sensor import return_table
 
 app=Flask(__name__)
 
@@ -36,6 +39,7 @@ def test():
 @app.route("/api/summary_sensor", methods=["GET"])
 def get_latest():
     try:
+              
         # Retrieve query parameters
         begin_date = request.args.get('begin_date')
         end_date = request.args.get('end_date')
@@ -64,7 +68,7 @@ def get_latest():
         g1 = float(request.args.get('g1'))
         g2 = float(request.args.get('g2'))
         
-        return summary_s.return_table(begin_date, end_date, red, orange, green, lightBlue,salt,web,dav,r0,r1,r2,o0,o1,o2,b0,b1,b2,g0,g1,g2).to_json(orient='records')
+        return return_table(begin_date, end_date, red, orange, green, lightBlue,salt,web,dav,r0,r1,r2,o0,o1,o2,b0,b1,b2,g0,g1,g2).to_json(orient='records')
     except Exception as e:
         traceback_str = ''.join(traceback.format_exception(etype=type(e), value=e, tb=e.__traceback__))
         app.logger.error(f"Error: {traceback_str}")
@@ -98,7 +102,7 @@ def get_latest_county():
         d2 = float(request.args.get('d2'))
         
         #return s0
-        return summary_s.return_county(begin_date, end_date, red, orange, green, lightBlue,salt,web,dav,s0,s1,s2,w0,w1,w2,d0,d1,d2).to_json(orient='records')
+        return return_county(begin_date, end_date, red, orange, green, lightBlue,salt,web,dav,s0,s1,s2,w0,w1,w2,d0,d1,d2).to_json(orient='records')
     except Exception as e:
         traceback_str = ''.join(traceback.format_exception(etype=type(e), value=e, tb=e.__traceback__))
         app.logger.error(f"Error: {traceback_str}")
