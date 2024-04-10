@@ -127,11 +127,8 @@ def get_sensor_linear():
 # Gets all dates and orders them for the date selection tool
 @app.route("/api/date_range", methods=["GET"])
 def get_date_range():
-
     # Pass the dates to function
     return pd.read_csv('/app/flask_app/static/data/date_range.csv').to_json(orient='records')
-    
-
 
 # Load Model
 #model_pm25 = load_model('static/data/nnn_model_1.h5')
