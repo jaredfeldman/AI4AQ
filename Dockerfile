@@ -11,11 +11,21 @@ COPY ./flask_app/utils/ /app/flask_app/utils/
 COPY ./flask_app/app.py /app/flask_app/app.py
 COPY requirements.txt .
 
+# Upgrade pip
+RUN pip install --upgrade pip
+
 # Install dependencies needed for the  application
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Expose port 5000, the default Flask port
 EXPOSE 5000/tcp
+
+# Create directory for the SQLite database file
+RUN mkdir -p /app/flask_app/db
+
+RUN chmod -R 777 /app/flask_app/db
+RUN useradd -ms /bin/bash myuser
+USER myuser
 
 # Define command to run the application
 # NOTE: `flask run` is not needed
