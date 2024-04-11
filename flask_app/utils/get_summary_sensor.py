@@ -1,16 +1,22 @@
+# get_summary_sensor.py
+
 import pandas as pd
 import sqlite3
 from datetime import datetime, timedelta
+import numpy as np
 
 #----# Newly added for using s3
 
 import boto3
 from io import StringIO
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 def initialize_s3_client():
-    aws_access_key_id = "INSERT KEY"
-    aws_secret_access_key = "INSERT KEY"
+    aws_access_key_id = os.getenv("AWS_ACCESS_KEY_ID")
+    aws_secret_access_key = os.getenv("AWS_SECRET_ACCESS_KEY")
 
     if aws_access_key_id and aws_secret_access_key:
         return boto3.client('s3', aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_secret_access_key)
@@ -52,6 +58,7 @@ def return_table(begin_date, end_date,red,orange,green,lightBlue,salt,web,dav,r0
     bucket_name = 'ai4aq'
     file_key = 'data/slc_daily_pm2.5_pm10_2016_present.csv'
     csv_data = download_csv_from_s3(bucket_name, file_key)
+    #print(f"csv_data after download from S3: {csv_data}")
 
     # Create the SQLite DB from CSV
     db_filename = 'flask_app/db/sensors_readings_2016_present.db'
@@ -67,6 +74,8 @@ def return_table(begin_date, end_date,red,orange,green,lightBlue,salt,web,dav,r0
     SELECT sensor_id, latitude, longitude, altitude, AVG(pm2) AS avg_pm2, AVG(pm10) AS avg_pm10
     FROM sensors_readings
     WHERE date(date) BETWEEN ? AND ?
+    AND pm2 IS NOT NULL
+    AND pm10 IS NOT NULL
     GROUP BY sensor_id, latitude, longitude, altitude
     """
     
@@ -116,13 +125,29 @@ def return_table(begin_date, end_date,red,orange,green,lightBlue,salt,web,dav,r0
 
     # Step 3: Calculate Averages
     averages = sums.copy()
-    averages['cat_avg_pm2'] = round(sums['avg_pm2'] / counts['count']).astype('int')
-    averages['cat_avg_pm10'] = round(sums['avg_pm10'] / counts['count']).astype('int')
+    #averages['cat_avg_pm2'] = np.nan_to_num(round(sums['avg_pm2'] / counts['count']).astype('int'))
+    #averages['cat_avg_pm10'] = np.nan_to_num(round(sums['avg_pm10'] / counts['count']).astype('int'))
+
+
+
+
+    average_pm2 = sums['avg_pm2'] / counts['count']
+    average_pm2_valid = np.where(np.isfinite(average_pm2), average_pm2, 0)
+    averages['cat_avg_pm2'] = np.round(average_pm2_valid).astype('int')
+
+    average_pm10 = sums['avg_pm10'] / counts['count']
+    average_pm10_valid = np.where(np.isfinite(average_pm10), average_pm10, 0)
+    averages['cat_avg_pm10'] = np.round(average_pm10_valid).astype('int')
+
+
+
+
+    
 
     averages = averages[['category', 'cat_avg_pm2', 'cat_avg_pm10']]
     
     # Join
-    
+
     df['avg_pm2'] = round(df['avg_pm2']).astype('int')
     df['avg_pm10'] = round(df['avg_pm10']).astype('int')
 
@@ -160,13 +185,15 @@ def return_county(begin_date, end_date,red,orange,green,lightBlue,salt,web,dav,s
         end_date = end_date_obj.strftime("%Y-%m-%d")
 
     # Set up sqlite
-    connection = sqlite3.connect('./flask_app/db/sensors_readings_2016_present.db')
+    connection = sqlite3.connect('flask_app/db/sensors_readings_2016_present.db')
     
     # Assemble Query
     sql_query = """
     SELECT sensor_id, latitude, longitude, altitude, AVG(pm2) AS avg_pm2, AVG(pm10) AS avg_pm10
     FROM sensors_readings
     WHERE date(date) BETWEEN ? AND ?
+    AND pm2 IS NOT NULL
+    AND pm10 IS NOT NULL
     GROUP BY sensor_id, latitude, longitude, altitude
     """
     
@@ -174,7 +201,7 @@ def return_county(begin_date, end_date,red,orange,green,lightBlue,salt,web,dav,s
     df = pd.read_sql_query(sql_query, connection, params=(begin_date, end_date))
     
     # Join with color categories
-    df_color = pd.read_csv('static/data/sensor_categories.csv')
+    df_color = pd.read_csv('./flask_app/static/data/sensor_categories.csv')
     df = pd.merge(df,df_color, on = 'sensor_id')
     
     selected_colors =[]

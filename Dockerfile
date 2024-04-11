@@ -9,6 +9,7 @@ COPY ./flask_app/static/ /app/flask_app/static/
 COPY ./flask_app/templates/ /app/flask_app/templates/
 COPY ./flask_app/utils/ /app/flask_app/utils/
 COPY ./flask_app/app.py /app/flask_app/app.py
+COPY ./flask_app/.env /app/flask_app/.env
 COPY requirements.txt .
 
 # Upgrade pip
