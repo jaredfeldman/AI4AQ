@@ -15,6 +15,7 @@ from datetime import datetime, timedelta
 from joblib import load
 import schedule
 import time
+import threading
 
 ## import functions
 #from get_latest_sensor_test import return_table
@@ -241,8 +242,6 @@ def predict_AQ():
 # to ensure latest data.
 schedule.every().day.at("06:15").do(create_database) # Time here and Lambda assumes UTC-6 for Daylight Savings Time
 schedule.every().day.at("06:15").do(get_date_range) # Time here and Lambda assumes UTC-6 for Daylight Savings Time
-
-import threading
 
 # Function to run scheduled tasks
 def run_scheduled_tasks():
