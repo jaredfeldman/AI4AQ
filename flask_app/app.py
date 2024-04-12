@@ -240,15 +240,18 @@ def predict_AQ():
 # The S3 bucket is updated around 00:00 every day, this provides some buffer
 # to ensure latest data.
 schedule.every().day.at("06:15").do(create_database) # Time here and Lambda assumes UTC-6 for Daylight Savings Time
+schedule.every().day.at("06:15").do(get_date_range) # Time here and Lambda assumes UTC-6 for Daylight Savings Time
 
-if __name__=="__main__":
-    # Start the application
-    app.run(host='0.0.0.0', port=5000, debug=True)
+import threading
 
-    # Run scheduled task every 60 seconds
+# Function to run scheduled tasks
+def run_scheduled_tasks():
     while True:
         schedule.run_pending()
-        time.sleep(60)
+        time.sleep(60)  # Sleep for 1 minute before checking again
 
-
+if __name__ == "__main__":
+    # Start the Flask application
+    threading.Thread(target=run_scheduled_tasks).start()  # Start scheduled tasks in a separate thread
+    app.run(host='0.0.0.0', port=5000, debug=True, threaded=True)
 
