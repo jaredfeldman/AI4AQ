@@ -2,6 +2,59 @@ import pandas as pd
 import sqlite3
 from datetime import datetime, timedelta
 
+#----# Newly added for using s3
+
+import boto3
+import json
+from io import StringIO
+import os
+
+def get_aws_secret(secret_id, secret_name, region='us-west-2'):  
+    # initialize secret client
+    session = boto3.session.Session()
+    secret_client = session.client('secretsmanager',
+                                   region_name = region)
+
+    # get the secret data
+    response = secret_client.get_secret_value(
+    SecretId=secret_id
+    )
+
+    # store secret as JSON
+    secret_value = response['SecretString']
+    
+    # parse the secret JSON
+    secret_json = json.loads(secret_value)
+    
+    # extract the secret
+    return secret_json.get(secret_name)
+
+def initialize_s3_client():
+
+    # get the secrets from environment variables that are passed during runtime
+    aws_access_key_id = os.environ.get("AWS_ACCESS_KEY_ID")
+    aws_secret_access_key = os.environ.get("AWS_SECRET_ACCESS_KEY")
+
+    if aws_access_key_id and aws_secret_access_key:
+        return boto3.client('s3', aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_secret_access_key)
+    else:
+        raise ValueError('AWS credentials not provided')
+
+def download_csv_from_s3(bucket_name, file_key):
+    # Initialize S3 client
+    s3_client = initialize_s3_client()
+    
+    response = s3_client.get_object(Bucket=bucket_name, Key=file_key)
+    csv_string = response['Body'].read().decode('utf-8') # this successfully loads in the data
+    return pd.read_csv(StringIO(csv_string))
+
+def create_database_from_csv(csv_data, db_filename):  
+    connection = sqlite3.connect(db_filename)
+    csv_data.to_sql('sensors_readings', connection, if_exists='replace', index=False)
+    connection.close()
+
+#----# End of new stuff
+
 def return_table(begin_date, end_date,red,orange,green,lightBlue,salt,web,dav,r0,r1,r2,o0,o1,o2,b0,b1,b2,g0,g1,g2):
 
 
@@ -17,10 +70,10 @@ def return_table(begin_date, end_date,red,orange,green,lightBlue,salt,web,dav,r0
         # Convert back to string
         end_date = end_date_obj.strftime("%Y-%m-%d")
 
-    
+    db_filename = './flask_app/db/sensors_readings_2016_present.db'
     
     # Set up sqlite
-    connection = sqlite3.connect('static/data/sensors_readings_2016_present.db')
+    connection = sqlite3.connect(db_filename)
     
     # Assemble Query
     sql_query = """
@@ -36,7 +89,7 @@ def return_table(begin_date, end_date,red,orange,green,lightBlue,salt,web,dav,r0
     df = pd.read_sql_query(sql_query, connection, params=(begin_date, end_date))
     
     # Join with color categories
-    df_color = pd.read_csv('static/data/sensor_categories.csv')
+    df_color = pd.read_csv('./flask_app/static/data/sensor_categories.csv')
     df = pd.merge(df,df_color, on = 'sensor_id')
     
     selected_counties =[]
@@ -122,8 +175,10 @@ def return_county(begin_date, end_date,red,orange,green,lightBlue,salt,web,dav,s
         # Convert back to string
         end_date = end_date_obj.strftime("%Y-%m-%d")
 
+    db_filename = './flask_app/db/sensors_readings_2016_present.db'
+
     # Set up sqlite
-    connection = sqlite3.connect('static/data/sensors_readings_2016_present.db')
+    connection = sqlite3.connect(db_filename)
     
     # Assemble Query
     sql_query = """
@@ -139,7 +194,7 @@ def return_county(begin_date, end_date,red,orange,green,lightBlue,salt,web,dav,s
     df = pd.read_sql_query(sql_query, connection, params=(begin_date, end_date))
     
     # Join with color categories
-    df_color = pd.read_csv('static/data/sensor_categories.csv')
+    df_color = pd.read_csv('./flask_app/static/data/sensor_categories.csv')
     df = pd.merge(df,df_color, on = 'sensor_id')
     
     selected_colors =[]
@@ -224,7 +279,7 @@ def sensor_linear(begin_date,end_date,red,orange,green,lightBlue,salt,web,dav):
         begin_date = begin_date_obj.strftime("%Y-%m-%d")
 
     # Set up sqlite
-    connection = sqlite3.connect('static/data/sensors_readings_2016_present.db')
+    connection = sqlite3.connect('./flask_app/static/data/sensors_readings_2016_present.db')
     
     # Assemble Query
     sql_query = """
@@ -240,7 +295,7 @@ def sensor_linear(begin_date,end_date,red,orange,green,lightBlue,salt,web,dav):
     df = pd.read_sql_query(sql_query, connection, params=(begin_date, end_date))
     df = df.dropna()
 #     # Join with color categories
-    df_color = pd.read_csv('static/data/sensor_categories.csv')
+    df_color = pd.read_csv('./flask_app/static/data/sensor_categories.csv')
     df = pd.merge(df,df_color, on = 'sensor_id')
     
     selected_colors =[]
@@ -289,9 +344,11 @@ def sensor_linear_category(begin_date,end_date,red,orange,green,lightBlue,salt,w
         begin_date_obj += timedelta(days=-92)
         
     begin_date = begin_date_obj.strftime("%Y-%m-%d")
+
+    db_filename = './flask_app/db/sensors_readings_2016_present.db'
     
     # Set up sqlite
-    connection = sqlite3.connect('static/data/sensors_readings_2016_present.db')
+    connection = sqlite3.connect(db_filename)
     
     # Assemble Query
     sql_query = """
@@ -307,7 +364,7 @@ def sensor_linear_category(begin_date,end_date,red,orange,green,lightBlue,salt,w
     df = pd.read_sql_query(sql_query, connection, params=(begin_date, end_date))
     
     # Join with color categories
-    df_color = pd.read_csv('static/data/sensor_categories.csv')
+    df_color = pd.read_csv('./flask_app/static/data/sensor_categories.csv')
     df = pd.merge(df,df_color, on = 'sensor_id')
     
     selected_counties =[]

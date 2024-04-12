@@ -64,7 +64,7 @@ def find_nearest_sensor_pm_value(latitude, longitude, df, pm_type='pm2'):
     return average_pm_value
 
 def pm25_predict(input_lat, input_lng, input_date, cluster_labels):
-    url_base = 'static/data/'
+    url_base = './flask_app/static/data/'
 
     input_lng = round(input_lng, 5)
     input_lat = round(input_lat, 5)
@@ -75,7 +75,7 @@ def pm25_predict(input_lat, input_lng, input_date, cluster_labels):
     end_date_obj = begin_date_obj + timedelta(days=1)
     end_date = end_date_obj.strftime("%Y-%m-%d")
 
-    connection = sqlite3.connect(f'{url_base}sensors_readings_2016_present.db')
+    connection = sqlite3.connect('./flask_app/db/sensors_readings_2016_present.db')
     sql_query = """
     SELECT sensor_id, pm2, pm10, latitude, longitude
     FROM sensors_readings
