@@ -42,7 +42,7 @@ h1, h2, h3, h4, h5, h6 {
     display: flex;
     flex-direction: row;
     height: 100vh; /* Adjust height based on header's height */
-    padding-top: 245px;
+    padding-top: 55px;
 }
 
 .map-container {
@@ -61,13 +61,16 @@ h1, h2, h3, h4, h5, h6 {
     position: fixed;
     right: 20px; /* Right side of the screen */
     bottom: 140px; /* Up from the bottom */
-    width: 300px;
+    width: 1000px;
     z-index: 1000; /* Ensure it appears above the map */
 }
 
 #my_dataviz {
-    
+    position: fixed;
+    right: 20px;
+    bottom: 130px;
     height: 320px;
+    width: 320px;
     background-color: rgba(255, 255, 255, 0.8); 
     padding: 10px;
     border-radius: 5px; /* Optional: Rounded corners for the box */
@@ -75,13 +78,34 @@ h1, h2, h3, h4, h5, h6 {
     
 }
 
-#my_dataviz_buttons{
-    width: 300px;
-    height: 40px;
+/* Button Group CSS */
+#my_dataviz_buttons {
+    width: 320px;
     border-radius: 8px;
-    top: -10px;
-    right: 0px;
+    top: -100px;
+    right: -663px;
+    display: flex;
+    justify-content: space-around; /* Ensures buttons are evenly spaced */
 }
+
+/* Active Button CSS */
+.active-button {
+    font-weight: bold;
+    color: white; /* Text color for active state */
+    background-color: #007bff; /* Bootstrap primary color for active state */
+    border-color: #007bff;
+    transform: scale(1.1); /* Slightly larger */
+    transition: all 0.3s ease; /* Smooth transition for size and color */
+}
+
+/* Inactive Button CSS */
+.inactive-button {
+    background-color: #f8f9fa; /* Bootstrap light color for inactive state */
+    color: #6c757d; /* Bootstrap secondary text color for inactive state */
+    border-color: #f8f9fa;
+    transition: all 0.3s ease; /* Smooth transition for size and color */
+}
+
 
 .button-group-colors {
     position: absolute;
@@ -163,7 +187,7 @@ h1, h2, h3, h4, h5, h6 {
     bottom: 0; /* Aligns to the bottom of the viewport */
     left: 0;
     width: 100%; /* Full width of the viewport */
-    height: 80px; /* Height of the bar */
+    height: 130px; /* Height of the bar */
     background-color: #333; /* Color of the bar */
     z-index: 999;
 }
@@ -209,7 +233,7 @@ h1, h2, h3, h4, h5, h6 {
     left: -3000px; /* Initially hide the sidebar off-screen to the left */
     background-color: white;
     z-index: 900;
-    transition: left 0.5s; /* Smooth transition for sliding effect */
+    transition: left 0.8s; /* Smooth transition for sliding effect */
 }
 
 /* Class to slide in the sidebar */
@@ -244,6 +268,14 @@ h1, h2, h3, h4, h5, h6 {
     top: 4px; /* Move up */
 }
 
+#toggleSalt.inactive{ background-color: white; color: gray; }
+#toggleWeb.inactive { background-color: white; color: gray; }
+#toggleDav.inactive { background-color: white; color: gray; }
+#toggleLightBlue.inactive { background-color: white; color: gray; }
+#toggleRed.inactive { background-color: white; color: gray; }
+#toggleOrange.inactive { background-color: white; color: gray; }
+#toggleGreen.inactive { background-color: white; color: gray; }
+#toggleLightBlue.inactive { background-color: white; color: gray; }
 
 #toggleSalt.active { background-color: #66cc99; color: white; }
 #toggleWeb.active { background-color: #ff9966; color: white; }
@@ -264,13 +296,18 @@ h1, h2, h3, h4, h5, h6 {
     gap: 10px;
 }
 
+.btn-info{
+    background-color: white;
+    color: gray;
+}
+
 .color-button, #colorToggle {
     flex: 0 1 auto; /* Allows buttons to grow and shrink but not beyond their content's size */
     cursor: pointer; /* Changes the mouse cursor to indicate clickable items */
     
 }
 
-/* Example of a specific button styling */
+/* specific button styling */
 #colorToggle {
     color: white;
     border: none;
@@ -280,16 +317,23 @@ h1, h2, h3, h4, h5, h6 {
 
 #colorToggle {
     position: fixed;
-    top: 200px;
-    left: 100px;
+    top: 36px;
+    left: 194px;
     display: flex;
+    height: 42px;
     width: 70px;
     z-index: 1000;
+    transition: transform 0.8s ease; /* Smooth transition for the transform property */
+    transform: translateY(-200%); /* Start offscreen, hidden below the view */
+}
+
+#colorToggle.active {
+transform: translateY(0%); /* Moves into view */
 }
 
 #toggle {
     position: fixed;
-    top: 200px;
+    top: 40px;
     left: 10px;
     display: flex;
     width: 80px;
@@ -303,11 +347,20 @@ h1, h2, h3, h4, h5, h6 {
     border-radius: 0px;
     margin: -5px;
 }
-
+#toggleButton1{
+    position: relative;
+    right: 10px;
+    height: 40px;
+}
+#toggleButton2{
+    position: relative;
+    right: 10px;
+    height: 40px;
+}
 #toggleButtonPM {
     position: absolute;
     top:-35px;
-    left:-10px;
+    left:-20px;
     width: 190px;
     height:35px;
     z-index:1000px;
@@ -318,8 +371,8 @@ h1, h2, h3, h4, h5, h6 {
 #toggleButtonPM2 {
     position: absolute;
     top:-35px;
-    left:193px;
-    width: 222px;
+    left:190px;
+    width: 226px;
     height:35px;
     z-index:1000px;
     background: gray;
@@ -329,21 +382,118 @@ h1, h2, h3, h4, h5, h6 {
 #toggleButtonPM3 {
     position: absolute;
     top:-35px;
-    left:418px;
-    width: 242px;
+    left:426px;
+    width: 226px;
     height:35px;
     z-index:1000px;
     background: gray;
+    transition: transform 0.8s ease; /* Smooth transition for the transform property */
+    transform: translateY(-400%); /* Start offscreen, hidden below the view */
     color: white;
 }
+
+
+#toggleButtonPM3.active {
+    transform: translateY(0%); /* Moves into view */
+}
+#income_buttons{
+    position: relative;
+    right: -10px;
+    transition: transform 0.8s ease; /* Smooth transition for the transform property */
+    transform: translateY(-400%);
+}
+#income_buttons.active {
+    transform: translateY(0%); /* Moves into view */
+}
+/*sadjfsajflhsafhjasflhsahjf*/
+
+
+
 
 /* Style for the button group container */
 #pmButtons {
     position: fixed;
     right: 555px; /* Right side of the screen */
-    top: 283px; /* Up from the bottom */
+    top: 127px; /* Up from the bottom */
     z-index: 1000;
     width: 180px;
 }
 
+/* added */
+#spinning-loader {
+    display: none; /* Hide spinner initially */
+    position: fixed; /* Overlay on the whole screen */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+    z-index: 1100; /* Ensure it's above other content */
+}
 
+#dataviz-container {
+    bottom: -360px;
+    transition: transform 0.8s ease; /* Smooth transition for the transform property */
+    transform: translateY(100%); /* Start offscreen, hidden below the view */
+    z-index: 980; /* Ensure it's above other content */
+}
+
+#dataviz-container.active {
+    transform: translateY(-400px); /* Moves into view */
+}
+
+
+
+#colorToggle {
+    color: white;
+    border: none;
+    padding: 10px 12px;
+    border-radius: 5px;
+}
+
+#toggleDatavizBtn {
+    position: fixed;
+    top: 40px;
+    left: 102px;
+    display: flex;
+    width: 80px;
+    z-index: 1000;
+}
+
+#my_dataviz_linear {
+    position: fixed;
+    right: 380px;
+    bottom: 130px;
+    height: 320px;
+    width: 900px;
+    background-color: rgba(255, 255, 255, 0.8);
+    padding: 10px;
+    border-radius: 5px; /* Optional: Rounded corners for the box */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    
+}
+  
+.header-logo {
+    height: 50px; /* Set the logo height */
+    margin-right: 10px; /* Space between the logo and the title */
+}
+
+#title-adjust h1 {
+    margin-bottom: 0; /* Remove bottom margin from the title if necessary */
+}
+
+#sensorTitleFix {
+    position: absolute;
+    top: -5px; /* Adjust this value as needed */
+    left: 50%; /* Center horizontally relative to the nearest positioned ancestor */
+    transform: translateX(-50%); /* Shift to the left by 50% of its own width */
+    width: 700px;
+    z-index: 1000;
+    color: white;
+    padding: 28px 30px;
+    border-radius: 5px;
+}
+}
+
+/*end added*/

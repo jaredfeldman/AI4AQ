@@ -51,78 +51,86 @@
     
     <!-- Main Container  -->
     <div class="container-fluid py-0 px-0">
-
+        
         
         <header>
             
-            <!-- Navigation Links -->
-            <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-                <div class="container-fluid">
-                    <a class="navbar-brand" href="#">AI4AQ</a>
-                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
-                        <span class="navbar-toggler-icon"></span>
-                    </button>
-                    <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
-                        <div class="navbar-nav">
-                            <a class="nav-link active" aria-current="page" href="#">Home</a>
-                            <a class="nav-link" href="#">About</a>
-                            <a class="nav-link" href="#">Data</a>
-                            <a class="nav-link" href="#">Contact</a>
-                        </div>
-
-                    </div>
-                </div>
-            </nav>
             
             <!-- Existing Header Content -->
         <!-- Toggler Button -->
+        
+        <div id="loadingOverlay" style="display: none; position: fixed; width: 100%; height: 100%; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0,0,0,0.5); z-index: 2; cursor: pointer;">
+          <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 20px; color: white;">
+            Generating AI sensor...
+            <br>
+<!--            <img src="loading_spinner.gif" alt="Loading" style="margin-top: 10px;"/> <!-- Use a suitable loading spinner gif -->
+          </div>
+        </div>
 
           <button class="btn btn-secondary" type="button" data-toggle="collapse" data-target="#sidebar" aria-expanded="false" aria-controls="sidebar" onclick="toggleSidebar()" id = "toggle">Sidebar</button>
+          <!--  added        -->
+          <button id="toggleDatavizBtn" class="btn btn-secondary">Graphs</button>
 
           <button class="btn btn-secondary" type="button" id="colorToggle">Colors</button>
-          <!-- Background image -->
-          <div class="p-5 text-center bg-image" style="
-              height: 160px;
-            ">
+
+<!--   end added   -->
+          <!-- Background image -->            
             
-            
-          <div class="d-flex justify-content-center align-items-center h-100 v-200">
-            <div class="text-white">
-                <div id = "title-adjust">
-                  <h1 class="mb-3">Air Quality Justice Utah</h1>
-                  <a class="btn btn-outline-light btn-lg" href="#!" role="button">Call to action</a>
+           
+                <div class="d-flex justify-content-center align-items-center h-100 v-200">
+                    <div class="text-white d-flex align-items-center"> <!-- Flex container for horizontal alignment -->
+                        <img src="/static/logo/logo.png" alt="Logo" style="height: 70px; margin-right: 10px; margin-top:-10px;">
+                        <div id="title-adjust">
+                            <h1 class="mb-3">AI4AQ  Salt Lake Area</h1>
+                        </div>
+                    </div>
                 </div>
-              <p><div id = 'sensorTitle'><h2>Sensor Readings</h2></div></p>
-            </div>
-          </div>
-        </header>
+            </header>
+
 
        
         <!--Main Content-->
         <div class="main-content d-flex flex-column">
+            <div id = 'sensorTitle'><h2>Sensor Readings</h2></div>
+           
 
             <!--Map and Button Group Container-->
             <div class="map-container d-flex flex-column">
                 <!--Map-->
+                
                 <div id="mapid"></div> <!-- Set a specific height for the map -->
+                
+<!--   added             -->
+                <div id="spinning-loader" style = "font-size: 20px; color: white; background-color: rgba(0,0,0,0.5)">
+                    
+                    Generating AI Sensor...
+                    <div class="spinner-border text-primary" role="status">
+                      
+                      <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+<!-- end added         -->
                 <!--PM Checkboxes-->
 <!--                <div id="overlay-box" style="display: none;">-->
 <!--                    <p id="dynamic-text">Average AQ between 2020-01-07 and 2022-02-01</p>-->
 <!--                    <button id="overlay-button">Click me</button>-->
 <!--                </div>-->
                 
-                
                 <!-- Create a div for graph -->
-
+                
                 <div id="dataviz-container">
+                    <div id="my_dataviz_linear"></div>
                     <div id="my_dataviz"></div>
+                    
                     
                     <!-- Graph Toggle Buttons -->
                     <div class="btn-group mt-2" role="group2" aria-label="Basic checkbox toggle button group" id="my_dataviz_buttons">
-                        <button id="categoryGraphButton" class="btn btn-secondary">Income Levels</button>
-                        <button id="countyGraphButton" class="btn btn-secondary">County</button>
+                        <button id="categoryGraphButton" class="btn  active-button">Income Levels</button>
+                        <button id="countyGraphButton" class="btn  inactive-button">County</button>
                     </div>
                 </div>
+
+
                 
                 <!--Buttons PM-->
                 <!-- Additional Toggle Buttons -->
@@ -140,19 +148,21 @@
                         <button id="toggleSalt" class="color-button">Salt Lake</button>
                         <button id="toggleWeb" class="color-button">Weber</button>
                         <button id="toggleDav" class="color-button">Davis</button>
-    
+                    <div id = "income_buttons">
                         <button id="toggleRed" class="color-button">Low</button>
                         <button id="toggleOrange" class="color-button">Low/Mid</button>
                         <button id="toggleGreen" class="color-button">Mid</button>
                         <button id="toggleLightBlue" class="color-button">High</button>
                     </div>
+                    </div>
+                
                 </div>
                 </div>
 
-
+                
                 <!-- Colored Bar Container -->
                 <div id="colored-bar">
-                    
+                    <div id = 'sensorTitleFix'><center><h4>select a date or range to see air quality</h4></center></div>
                 </div>
 
                 <!--Date Slider-->
@@ -165,7 +175,7 @@
                         <input type="radio" id="dateRange" name="dateSelection" value="range">
                         <label for="dateRange">Range</label>
                     </div>
-                    <button id="updateSensorsButton">Update</button>
+                    <button id="updateSensorsButton">Select</button>
                 </div>
 
 

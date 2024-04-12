@@ -14,13 +14,14 @@ import pandas as pd
 from datetime import datetime, timedelta
 from joblib import load
 
+
+
 ## import functions
 #from get_latest_sensor_test import return_table
-#import utils.get_summary_sensor as summary_s
+import utils.get_summary_sensor as summary_s
 import utils.ai_sensor_model_predict as ai_sensor
 
-from utils.get_summary_sensor import return_county
-from utils.get_summary_sensor import return_table
+
 
 app=Flask(__name__)
 
@@ -39,7 +40,6 @@ def test():
 @app.route("/api/summary_sensor", methods=["GET"])
 def get_latest():
     try:
-              
         # Retrieve query parameters
         begin_date = request.args.get('begin_date')
         end_date = request.args.get('end_date')
@@ -68,7 +68,7 @@ def get_latest():
         g1 = float(request.args.get('g1'))
         g2 = float(request.args.get('g2'))
         
-        return return_table(begin_date, end_date, red, orange, green, lightBlue,salt,web,dav,r0,r1,r2,o0,o1,o2,b0,b1,b2,g0,g1,g2).to_json(orient='records')
+        return summary_s.return_table(begin_date, end_date, red, orange, green, lightBlue,salt,web,dav,r0,r1,r2,o0,o1,o2,b0,b1,b2,g0,g1,g2).to_json(orient='records')
     except Exception as e:
         traceback_str = ''.join(traceback.format_exception(etype=type(e), value=e, tb=e.__traceback__))
         app.logger.error(f"Error: {traceback_str}")
@@ -102,7 +102,7 @@ def get_latest_county():
         d2 = float(request.args.get('d2'))
         
         #return s0
-        return return_county(begin_date, end_date, red, orange, green, lightBlue,salt,web,dav,s0,s1,s2,w0,w1,w2,d0,d1,d2).to_json(orient='records')
+        return summary_s.return_county(begin_date, end_date, red, orange, green, lightBlue,salt,web,dav,s0,s1,s2,w0,w1,w2,d0,d1,d2).to_json(orient='records')
     except Exception as e:
         traceback_str = ''.join(traceback.format_exception(etype=type(e), value=e, tb=e.__traceback__))
         app.logger.error(f"Error: {traceback_str}")
@@ -116,9 +116,43 @@ def get_sensor_linear():
         end_date = request.args.get('end_date')
         
         # Fetching the color states
-        sensor = request.args.get('sensor')
+        red = request.args.get('red') == 'true'
+        orange = request.args.get('orange') == 'true'
+        green = request.args.get('green') == 'true'
+        lightBlue = request.args.get('lightBlue') == 'true'
         
-        return summary_s.sensor_linear(begin_date, end_date, sensor).to_json(orient='records')
+        # Fetching the county
+        salt = request.args.get('salt') == 'true'
+        web = request.args.get('web') == 'true'
+        dav = request.args.get('dav') == 'true'
+        
+        
+        return summary_s.sensor_linear(begin_date, end_date, red, orange, green, lightBlue,salt,web,dav).to_json(orient='records')
+    except Exception as e:
+        traceback_str = ''.join(traceback.format_exception(etype=type(e), value=e, tb=e.__traceback__))
+        app.logger.error(f"Error: {traceback_str}")
+        return jsonify({"error": "Internal Server Error"}), 500
+        
+@app.route("/api/sensor_linear_cat", methods=["GET"])
+def get_sensor_linear_cat():
+    try:
+        # Retrieve query parameters
+        begin_date = request.args.get('begin_date')
+        end_date = request.args.get('end_date')
+        
+        # Fetching the color states
+        red = request.args.get('red') == 'true'
+        orange = request.args.get('orange') == 'true'
+        green = request.args.get('green') == 'true'
+        lightBlue = request.args.get('lightBlue') == 'true'
+        
+        # Fetching the county
+        salt = request.args.get('salt') == 'true'
+        web = request.args.get('web') == 'true'
+        dav = request.args.get('dav') == 'true'
+        
+        
+        return summary_s.sensor_linear_category(begin_date, end_date, red, orange, green, lightBlue,salt,web,dav).to_json(orient='records')
     except Exception as e:
         traceback_str = ''.join(traceback.format_exception(etype=type(e), value=e, tb=e.__traceback__))
         app.logger.error(f"Error: {traceback_str}")
@@ -127,15 +161,26 @@ def get_sensor_linear():
 # Gets all dates and orders them for the date selection tool
 @app.route("/api/date_range", methods=["GET"])
 def get_date_range():
+
+    url_base = 'static/data/'
+    connection = sqlite3.connect(f'{url_base}sensors_readings_2016_present.db')
+    sql_query = """
+    SELECT date(date) as date
+    FROM sensors_readings
+    order by date(date)asc
+    """
+    df = pd.read_sql_query(sql_query, connection)
+    connection.close()
+
     # Pass the dates to function
-    return pd.read_csv('/app/flask_app/static/data/date_range.csv').to_json(orient='records')
+    return df.to_json(orient='records')
+    
+
 
 # Load Model
-#model_pm25 = load_model('static/data/nnn_model_1.h5')
-#model_pm10 = load_model('static/data/nnn_model_1_pm10.h5')
+model_pm25 = load_model('static/data/nnn_model_1_pm_25wind_image.h5')
+model_pm10 = load_model('static/data/nnn_model_1_pm_10wind_image.h5')
 
-model_pm25 = load_model('./flask_app/static/data/nnn_model_1_pm_25wind.h5')
-model_pm10 = load_model('./flask_app/static/data/nnn_model_1_pm_10wind.h5')
 
 @app.route("/api/predict", methods=["GET"])
 def predict_AQ():
@@ -146,22 +191,19 @@ def predict_AQ():
         lat = float(request.args.get("lat"))
         lng = float(request.args.get("lng"))
         the_date = request.args.get("theDate")
+        cluster_labels = request.args.get("mapCat")
         
-        tensor = ai_sensor.pm25_predict(lat, lng, the_date)
-        
+        tensor, adjust25,adjust10 = ai_sensor.pm25_predict(lat, lng, the_date,cluster_labels)
+#
         Xpm25 = model_pm25.predict(tensor)
-        Xpm25 = np.round(np.expm1(Xpm25)[0])
-        
-        Xpm10 = model_pm10.predict(tensor)
-        Xpm10 = np.round(np.expm1(Xpm10)[0])
-        
-        #Xpm10 = [20]
-        #Xpm2 = [10]
-        #values = [10., 15.]
+        Xpm25 = np.round(((np.expm1(Xpm25)[0])+adjust25)/2)
 
+        Xpm10 = model_pm25.predict(tensor)
+        Xpm10 = np.round(((np.expm1(Xpm10)[0])+adjust10)/2)
+        
 #        # Ensure the input_value is shaped correctly
         input_value = np.array([[Xpm25], [Xpm10]])  # Shape (1, 2)
-#
+##
         prediction = input_value.flatten().tolist()  # Flatten and convert to list
 
         return jsonify(prediction)
@@ -171,17 +213,9 @@ def predict_AQ():
 
 
 
-## Gets all dates and orders them for the date selection tool
-#@app.route("/api/predict", methods=["GET"])
-#def predict_AQ():
-#    values = [10., 15.]
-#    # Directly return the list as a JSON response
-#    return jsonify(values)
-#
-               
 
 if __name__=="__main__":
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(debug=True)
     
 
 
