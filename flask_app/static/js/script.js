@@ -2,7 +2,7 @@
 var startDate = "2020-01-01"; // default start date
 var endDate = "2020-12-31"; // default end date
 var allMarkers = [];
-let showColors = true;
+let showColors = false;
 
 // At the global level
 let currentGraphType = 'category'; // Default to category graph
@@ -44,6 +44,19 @@ var dateSlider;
 
 let dateArray = [];
 
+const countyColors = {
+    "Salt Lake County": "#66cc99",
+    "Weber County": "#ff9966",
+    "Davis County": "#9999cc"
+};
+
+
+const catColors = {
+    "red": "#d62728",
+    "orange": "#ff7f0e",
+    "green": "#2ca02c",
+    "blue": "#33ccff"
+};
 
 //--------------END GLOBAL VARIABLES---------------------------------------------
 
@@ -229,10 +242,10 @@ function updateSensors(startDate, endDate, map) {
             addSensorMarkers(data_sensor, map);
             calculateBarGraph(data_sensor);
             if (document.getElementById('singleDate').checked){
-                document.getElementById('sensorTitle').innerHTML = `<h4>Daily Average ${activeMetric} Levels <span style="font-size: smaller;">(${formatDateString(endDate)}</span>)</h4>`;
+                document.getElementById('sensorTitleFix').innerHTML = `<h4><center>Air Quality for ${formatDateString(endDate)}</center></h4>`;
             }
             else {
-                document.getElementById('sensorTitle').innerHTML = `<h4>Average ${activeMetric} Levels <span style="font-size: smaller;">(${formatDateString(startDate)} to ${formatDateString(endDate)}</span>)</h4>`;
+                document.getElementById('sensorTitleFix').innerHTML = `<enter><h4>Average Air Quality between ${formatDateString(startDate)} and ${formatDateString(endDate)}</h4></center>`;
             }
 
         })
@@ -283,14 +296,19 @@ function addSensorMarkers(data_sensor, map) {
         marker.bindPopup(`<b>Sensor ID:</b> ${sensor.sensor_id}<br><b>PM2.5 Value:</b> ${Math.round(sensor.avg_pm2)}`);
         marker.sensorData = sensor;
         if (color) {
+            
             markersByColor[color].push(marker); // Add marker to appropriate color category
-            if (colorStates[county]==true & colorStates[sensor.category] ==true) { // Check if markers for this color should be displayed
+            let theIncomeColor = sensor.category;
+            if (sensor.category == "blue") {
+                theIncomeColor = "lightBlue"
+            }
+            if (colorStates[county]==true & colorStates[theIncomeColor] ==true) {
+                console.log(color)// Check if markers for this color should be displayed
                 marker.addTo(map);
             }
         }
     });
 }
-
 
 function clearMarkers() {
     // Clear markers from each category
@@ -416,9 +434,6 @@ function updateAllMarkerContents() {
 
 // ------------ CENTROIDS ---------------------------------------
 
-// will need to color markers by county and level (updated centroid data or do if statement
-// can then pass info summary in with the graphs
-//summary will need to have conditional to only send color and countys
 
 // Global array to store all centroid markers for easy access
 var centroidMarkers = [];
@@ -575,8 +590,12 @@ function getCentroidForObjectID(objectID) {
         console.log('Geometry Coordinates:', feature.geometry.coordinates);
         // Since geometry.coordinates is an array [lng, lat]
         const coords = feature.geometry.coordinates;
-        
-        return coords.length === 2 ? coords : null; // This check ensures that coords is an array with two elements.
+        console.log(feature.properties.cluster_labels)
+
+        return {
+            coords: coords.length === 2 ? coords : null, // Ensure coords is an array with two elements
+            cluster_labels: feature.properties.cluster_labels
+        };
     }
     return null;
 }
@@ -587,7 +606,11 @@ function onEachFeature(feature, layer, map) {
         mouseover: highlightFeature,
         mouseout: resetHighlight,
         click: function(e) {
-            const centroid = getCentroidForObjectID(feature.properties.OBJECTID);
+            const result = getCentroidForObjectID(feature.properties.OBJECTID);
+
+            // You can now access coords and cluster_labels from the result
+            const centroid = result.coords;
+            const cluster_labels = result.cluster_labels;
 
             if (centroid && document.getElementById('singleDate').checked) {
                 // Determine the county and color based on feature properties
@@ -623,9 +646,12 @@ function onEachFeature(feature, layer, map) {
                 }
 
                 // Fetch data and add new marker
-                fetch(`/api/predict?lat=${centroid[1]}&lng=${centroid[0]}&theDate=${startDate}`)
+                fetch(`/api/predict?lat=${centroid[1]}&lng=${centroid[0]}&theDate=${startDate}&mapCat=${cluster_labels}`)
                 .then(response => response.json())
                 .then(data => {
+// added
+                    document.getElementById('spinning-loader').style.display = 'flex';
+// end added
                     const pm25Value = data[0];
                     const pm10Value = data[1];
                     const displayValue = activeMetric === 'pm2.5' ? pm25Value : pm10Value;
@@ -655,17 +681,25 @@ function onEachFeature(feature, layer, map) {
                         county: county,
                         category: feature.properties.category
                     };
-
-                    // Add the new marker to the appropriate category array
-                    centroidByColor[color].push(newMarker);
-                    theColor = feature.properties.category;
-                    if (theColor=='blue'){
-                        theColor='lightBlue'
-                    }
-                    if (colorStates[county] == true && colorStates[theColor] == true) {
-                        newMarker.addTo(map);
-                    }
+// changed
+                    setTimeout(() => {
+                        document.getElementById('spinning-loader').style.display = 'none';
+                        
+                        
+                        // Add the new marker to the appropriate category array
+                        centroidByColor[color].push(newMarker);
+                        theColor = feature.properties.category;
+                        if (theColor=='blue'){
+                            theColor='lightBlue'
+                        }
+                        if (colorStates[county] == true && colorStates[theColor] == true) {
+                            newMarker.addTo(map);
+                        }
+                    }, 2000);
+                    
+// end changed
                     updateJustGraph();
+
                 })
                 .catch(error => console.error('Error fetching prediction data:', error));
             }
@@ -734,6 +768,16 @@ function clearAllCentroidMarkers(map) {
     });
 
 }
+
+function showLoadingOverlay() {
+    document.getElementById('loadingOverlay').style.display = 'block';
+}
+
+function hideLoadingOverlay() {
+    document.getElementById('loadingOverlay').style.display = 'none';
+}
+
+
 
 
 
@@ -807,6 +851,7 @@ function updateDatesFromSlider() {
 
 function formatDateString(dateString) {
     const date = new Date(dateString);
+    date.setDate(date.getDate() + 1); // Add one day to the date
     let month = (date.getMonth() + 1).toString().padStart(2, '0'); // getMonth() is zero-based
     let day = date.getDate().toString().padStart(2, '0');
     let year = date.getFullYear();
@@ -817,6 +862,8 @@ function formatDateString(dateString) {
 document.getElementById('updateSensorsButton').addEventListener('click', function() {
     resetButtonStates(); // Ensure this is called to reset states as needed
     refreshSensorData(); // Load new data and refresh UI accordingly
+    document.getElementById('categoryGraphButton').click();
+
     
     
 });
@@ -917,6 +964,7 @@ function updateJustGraph() {
                 calculateBarGraph(data_sensor);
             } else if (currentGraphType === 'county') {
                 calculateCountyGraph(data_sensor);
+
             }
         })
         .catch(error => console.error('Error fetching sensor data:', error));
@@ -968,7 +1016,7 @@ function calculateBarGraph(data_sensor) {
         .attr("y", 0 - (margin.top / 2))
         .attr("text-anchor", "middle")
         .style("font-size", "16px")
-        .text(`${activeMetric} Average at Income Level`);
+        .text(`${activeMetric} Average`);
 
     var x = d3.scaleBand()
       .range([0, width])
@@ -1008,6 +1056,7 @@ function calculateBarGraph(data_sensor) {
                 default: return "#33ccff"; // Default color
             }
         });
+    fetchSensorDataAndShowGraph()
 }
 
 
@@ -1026,7 +1075,7 @@ function calculateCountyGraph(data_sensor) {
                 county_avg_pm10: firstEntryInCounty.cat_avg_pm10
             };
         });
-
+    
     var data = uniqueCountyData;
 
     var margin = {top: 40, right: 40, bottom: 50, left: 40},
@@ -1045,7 +1094,7 @@ function calculateCountyGraph(data_sensor) {
         .attr("y", 0 - (margin.top / 2))
         .attr("text-anchor", "middle")
         .style("font-size", "16px")
-        .text(`${activeMetric}  Average at County Level`);
+        .text(`${activeMetric} Average`);
 
     var x = d3.scaleBand()
       .range([0, width])
@@ -1084,6 +1133,175 @@ function calculateCountyGraph(data_sensor) {
                 default: return "#9999cc";
             }
         });
+    fetchSensorDataAndShowGraph()
+}
+
+// Function to fetch sensor data and show graph
+function fetchSensorDataAndShowGraph() {
+    console.log(currentGraphType)
+    let url;
+    if (currentGraphType === 'county') {
+        
+        url =             `/api/sensor_linear?begin_date=${startDate}&end_date=${endDate}&red=${colorStates.red}&orange=${colorStates.orange}&green=${colorStates.green}&lightBlue=${colorStates.lightBlue}&salt=${colorStates.salt}&web=${colorStates.web}&dav=${colorStates.dav}`;
+        
+    }
+    
+    
+    else {
+        url =             `/api/sensor_linear_cat?begin_date=${startDate}&end_date=${endDate}&red=${colorStates.red}&orange=${colorStates.orange}&green=${colorStates.green}&lightBlue=${colorStates.lightBlue}&salt=${colorStates.salt}&web=${colorStates.web}&dav=${colorStates.dav}`;
+    }
+    fetch(url)
+        .then(response => response.json())
+        .then(data => {
+
+            // Call function to create and show the D3 graph
+            createD3Visualization(data);
+        })
+        .catch(error => console.error('Error fetching sensor linear data:', error));
+}
+
+// Function to create and display the D3 visualization
+function createD3Visualization(data) {
+
+    //console.log(data)
+    // Define dimensions and margins for the graph
+    var margin = {top: 30, right: 20, bottom: 30, left: 50},
+        width = 900 - margin.left - margin.right,
+        height = 320 - margin.top - margin.bottom;
+
+    // Parse the date / time
+    var parseDate = d3.timeParse("%Y-%m-%d");
+
+    // Set the ranges
+    var x = d3.scaleTime().range([0, width]);
+    var y = d3.scaleLinear().range([height, 0]);
+
+    // Define the line
+    var valueline = d3.line()
+        .x(function(d) { return x(d.date); })
+        .y(function(d) { return y(d.pm2); });
+
+    // Append the svg object to the body of the page
+    d3.select("#my_dataviz_linear").selectAll("*").remove(); // Clear existing SVG to redraw
+    var svg = d3.select("#my_dataviz_linear").append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+      .append("g")
+        .attr("transform",
+              "translate(" + margin.left + "," + margin.top + ")");
+
+    // Format the data
+    data.forEach(function(d) {
+        d.date = parseDate(d.date);
+        d.pm2 = +d.pm2;
+    });
+
+    // Scale the range of the data
+    if (activeMetric == 'pm2.5'){
+        x.domain(d3.extent(data, function(d) { return d.date; }));
+        y.domain([0, d3.max(data, function(d) { return d.pm2; })]);
+    }
+    else {
+        x.domain(d3.extent(data, function(d) { return d.date; }));
+        y.domain([0, d3.max(data, function(d) { return d.pm10; })]);
+    }
+
+
+    // Group the data: I want to draw one line per group
+    
+    if (currentGraphType === 'category') {
+        
+        var sumstat = d3.nest() // nest function allows to group the calculation per level of a factor
+        .key(function(d) { return d.category;})
+        .entries(data);
+        
+        // set the color scale
+        var res = sumstat.map(function(d){ return d.key }) // list of group names
+        var color = d3.scaleOrdinal()
+          .domain(res)
+          .range(['"#d62728','#ff7f0e','#2ca02c','#33ccff'])
+        
+    }
+        
+    else if (currentGraphType === 'county') {
+        var sumstat = d3.nest() // nest function allows to group the calculation per level of a factor
+        .key(function(d) { return d.county;})
+        .entries(data);
+        
+        // set the color scale
+        var res = sumstat.map(function(d){ return d.key }) // list of group names
+        var color = d3.scaleOrdinal()
+          .domain(res)
+          .range(['#e41a1c','#377eb8','#4daf4a'])
+    }
+
+
+    if (currentGraphType === 'category') {
+        // Draw the line
+        svg.selectAll(".line")
+        .data(sumstat)
+        .enter()
+        .append("path")
+        .attr("fill", "none")
+        .attr("stroke", function(d){ return catColors[d.key]; })
+        .attr("stroke-width", 3)
+        .attr("d", function(d){
+            return d3.line()
+            .x(function(d) { return x(d.date); })
+            .y(function(d) { return y(d.pm2); })
+            (d.values)
+        })
+        if (startDate==endDate){
+            svg.append("text")
+            .attr("x", (width / 2))
+            .attr("y", 0 - (margin.top / 2))
+            .attr("text-anchor", "middle")
+            .style("font-size", "16px")
+            .text(`${activeMetric} Daily Average for the past 3 months from ${endDate}`);
+        }
+        else{
+            svg.append("text")
+            .attr("x", (width / 2))
+            .attr("y", 0 - (margin.top / 2))
+            .attr("text-anchor", "middle")
+            .style("font-size", "16px")
+            .text(`${activeMetric} Daily Average between ${startDate} and ${endDate}`);
+        }
+    }
+        
+    else if (currentGraphType === 'county') {
+        // Draw the line
+        svg.selectAll(".line")
+        .data(sumstat)
+        .enter()
+        .append("path")
+        .attr("fill", "none")
+        .attr("stroke", function(d){ return countyColors[d.key]; })
+        .attr("stroke-width", 3)
+        .attr("d", function(d){
+            return d3.line()
+            .x(function(d) { return x(d.date); })
+            .y(function(d) { return y(d.pm2); })
+            (d.values)
+        })
+        
+        svg.append("text")
+            .attr("x", (width / 2))
+            .attr("y", 0 - (margin.top / 2))
+            .attr("text-anchor", "middle")
+            .style("font-size", "16px")
+            .text(`${activeMetric} Average by County between ${startDate} and ${endDate}`);
+    }
+
+    // Add the X Axis
+    svg.append("g")
+      .attr("transform", "translate(0," + height + ")")
+      .call(d3.axisBottom(x));
+
+    // Add the Y Axis
+    svg.append("g")
+      .call(d3.axisLeft(y));
+
 }
 
 
@@ -1128,8 +1346,6 @@ function updateGraph(graphType) {
     g1 = g.pm25
     g2 = g.pm10
 
-
-
     
     if (graphType === 'category') {
         url = `/api/summary_sensor?begin_date=${startDate}&end_date=${endDate}&red=${colorStates.red}&orange=${colorStates.orange}&green=${colorStates.green}&lightBlue=${colorStates.lightBlue}&salt=${colorStates.salt}&web=${colorStates.web}&dav=${colorStates.dav}&r0=${r0}&r1=${r1}&r2=${r2}&o0=${o0}&o1=${o1}&o2=${o2}&b0=${b0}&b1=${b1}&b2=${b2}&g0=${g0}&g1=${g1}&g2=${g2}`;
@@ -1154,19 +1370,48 @@ function updateGraph(graphType) {
         .catch(error => console.error('Error fetching sensor data:', error));
 }
 
+document.getElementById('toggleDatavizBtn').addEventListener('click', function() {
+    var datavizContainer = document.getElementById('dataviz-container');
+    datavizContainer.classList.toggle('active'); // Toggle the active class to show/hide
+    toggleButtonPM3.classList.toggle('active')
+    income_buttons.classList.toggle('active')
+    colorToggle.classList.toggle('active')
+});
+
+
+
 //---------------------- END GRAPHS ------------------------
 
-// Add event listeners to buttons -----------------------------------
+// Function to update button appearance based on active graph type
+function updateButtonAppearance() {
+    const categoryBtn = document.getElementById('categoryGraphButton');
+    const countyBtn = document.getElementById('countyGraphButton');
+
+    if (currentGraphType === 'category') {
+        categoryBtn.classList.add('active-button');
+        categoryBtn.classList.remove('inactive-button');
+        countyBtn.classList.remove('active-button');
+        countyBtn.classList.add('inactive-button');
+    } else if (currentGraphType === 'county') {
+        countyBtn.classList.add('active-button');
+        countyBtn.classList.remove('inactive-button');
+        categoryBtn.classList.remove('active-button');
+        categoryBtn.classList.add('inactive-button');
+    }
+}
+
 document.getElementById('categoryGraphButton').addEventListener('click', function() {
     currentGraphType = 'category';
     updateGraph('category');
+    updateButtonAppearance();
 });
 
 document.getElementById('countyGraphButton').addEventListener('click', function() {
     currentGraphType = 'county';
     updateGraph('county');
-    
+    updateButtonAppearance();
 });
+
 
 document.addEventListener('DOMContentLoaded', function() {
     // Function to toggle button states

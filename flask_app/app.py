@@ -13,17 +13,44 @@ import numpy as np
 import pandas as pd
 from datetime import datetime, timedelta
 from joblib import load
+import schedule
+import time
+import threading
 
 ## import functions
 #from get_latest_sensor_test import return_table
-#import utils.get_summary_sensor as summary_s
 import utils.ai_sensor_model_predict as ai_sensor
 
 from utils.get_summary_sensor import return_county
 from utils.get_summary_sensor import return_table
+from utils.get_summary_sensor import sensor_linear_category
+from utils.get_summary_sensor import sensor_linear
+
+from utils.get_summary_sensor import download_csv_from_s3
+from utils.get_summary_sensor import create_database_from_csv
+from utils.get_summary_sensor import get_aws_secret
+from utils.get_summary_sensor import initialize_s3_client
 
 app=Flask(__name__)
 
+def create_database():
+    '''
+    Create a SQLite database from the current data that exists in
+    the CSV file in Lightsail S3 bucket
+    '''
+    
+    # Download the CSV file from S3
+    bucket_name = 'ai4aq'
+    file_key = 'data/slc_daily_pm2.5_pm10_2016_present.csv'
+    csv_data = download_csv_from_s3(bucket_name, file_key)
+    #print(f"csv_data after download from S3: {csv_data}")
+    
+    # Create the SQLite DB from CSV
+    db_filename = './flask_app/db/sensors_readings_2016_present.db'
+    create_database_from_csv(csv_data, db_filename)
+
+# Create the database on application launch
+create_database()
 
 # Main Endpoint
 @app.route("/")
@@ -39,7 +66,6 @@ def test():
 @app.route("/api/summary_sensor", methods=["GET"])
 def get_latest():
     try:
-              
         # Retrieve query parameters
         begin_date = request.args.get('begin_date')
         end_date = request.args.get('end_date')
@@ -116,9 +142,43 @@ def get_sensor_linear():
         end_date = request.args.get('end_date')
         
         # Fetching the color states
-        sensor = request.args.get('sensor')
+        red = request.args.get('red') == 'true'
+        orange = request.args.get('orange') == 'true'
+        green = request.args.get('green') == 'true'
+        lightBlue = request.args.get('lightBlue') == 'true'
         
-        return summary_s.sensor_linear(begin_date, end_date, sensor).to_json(orient='records')
+        # Fetching the county
+        salt = request.args.get('salt') == 'true'
+        web = request.args.get('web') == 'true'
+        dav = request.args.get('dav') == 'true'
+        
+        
+        return sensor_linear(begin_date, end_date, red, orange, green, lightBlue,salt,web,dav).to_json(orient='records')
+    except Exception as e:
+        traceback_str = ''.join(traceback.format_exception(etype=type(e), value=e, tb=e.__traceback__))
+        app.logger.error(f"Error: {traceback_str}")
+        return jsonify({"error": "Internal Server Error"}), 500
+        
+@app.route("/api/sensor_linear_cat", methods=["GET"])
+def get_sensor_linear_cat():
+    try:
+        # Retrieve query parameters
+        begin_date = request.args.get('begin_date')
+        end_date = request.args.get('end_date')
+        
+        # Fetching the color states
+        red = request.args.get('red') == 'true'
+        orange = request.args.get('orange') == 'true'
+        green = request.args.get('green') == 'true'
+        lightBlue = request.args.get('lightBlue') == 'true'
+        
+        # Fetching the county
+        salt = request.args.get('salt') == 'true'
+        web = request.args.get('web') == 'true'
+        dav = request.args.get('dav') == 'true'
+        
+        
+        return sensor_linear_category(begin_date, end_date, red, orange, green, lightBlue,salt,web,dav).to_json(orient='records')
     except Exception as e:
         traceback_str = ''.join(traceback.format_exception(etype=type(e), value=e, tb=e.__traceback__))
         app.logger.error(f"Error: {traceback_str}")
@@ -127,15 +187,26 @@ def get_sensor_linear():
 # Gets all dates and orders them for the date selection tool
 @app.route("/api/date_range", methods=["GET"])
 def get_date_range():
+
+    url_base = './flask_app/db/'
+    connection = sqlite3.connect(f'{url_base}sensors_readings_2016_present.db')
+    sql_query = """
+    SELECT date(date) as date
+    FROM sensors_readings
+    order by date(date)asc
+    """
+    df = pd.read_sql_query(sql_query, connection)
+    connection.close()
+
     # Pass the dates to function
-    return pd.read_csv('/app/flask_app/static/data/date_range.csv').to_json(orient='records')
+    return df.to_json(orient='records')
+    
+
 
 # Load Model
-#model_pm25 = load_model('static/data/nnn_model_1.h5')
-#model_pm10 = load_model('static/data/nnn_model_1_pm10.h5')
+model_pm25 = load_model('./flask_app/static/data/nnn_model_1_pm_25wind_image.h5')
+model_pm10 = load_model('./flask_app/static/data/nnn_model_1_pm_10wind_image.h5')
 
-model_pm25 = load_model('./flask_app/static/data/nnn_model_1_pm_25wind.h5')
-model_pm10 = load_model('./flask_app/static/data/nnn_model_1_pm_10wind.h5')
 
 @app.route("/api/predict", methods=["GET"])
 def predict_AQ():
@@ -146,22 +217,19 @@ def predict_AQ():
         lat = float(request.args.get("lat"))
         lng = float(request.args.get("lng"))
         the_date = request.args.get("theDate")
+        cluster_labels = request.args.get("mapCat")
         
-        tensor = ai_sensor.pm25_predict(lat, lng, the_date)
-        
+        tensor, adjust25,adjust10 = ai_sensor.pm25_predict(lat, lng, the_date,cluster_labels)
+#
         Xpm25 = model_pm25.predict(tensor)
-        Xpm25 = np.round(np.expm1(Xpm25)[0])
-        
-        Xpm10 = model_pm10.predict(tensor)
-        Xpm10 = np.round(np.expm1(Xpm10)[0])
-        
-        #Xpm10 = [20]
-        #Xpm2 = [10]
-        #values = [10., 15.]
+        Xpm25 = np.round(((np.expm1(Xpm25)[0])+adjust25)/2)
 
+        Xpm10 = model_pm25.predict(tensor)
+        Xpm10 = np.round(((np.expm1(Xpm10)[0])+adjust10)/2)
+        
 #        # Ensure the input_value is shaped correctly
         input_value = np.array([[Xpm25], [Xpm10]])  # Shape (1, 2)
-#
+##
         prediction = input_value.flatten().tolist()  # Flatten and convert to list
 
         return jsonify(prediction)
@@ -169,20 +237,20 @@ def predict_AQ():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+# Schedule the database refresh to run every day at 00:15 SLC time
+# The S3 bucket is updated around 00:00 every day, this provides some buffer
+# to ensure latest data.
+schedule.every().day.at("06:15").do(create_database) # Time here and Lambda assumes UTC-6 for Daylight Savings Time
+schedule.every().day.at("06:15").do(get_date_range) # Time here and Lambda assumes UTC-6 for Daylight Savings Time
 
+# Function to run scheduled tasks
+def run_scheduled_tasks():
+    while True:
+        schedule.run_pending()
+        time.sleep(60)  # Sleep for 1 minute before checking again
 
-## Gets all dates and orders them for the date selection tool
-#@app.route("/api/predict", methods=["GET"])
-#def predict_AQ():
-#    values = [10., 15.]
-#    # Directly return the list as a JSON response
-#    return jsonify(values)
-#
-               
-
-if __name__=="__main__":
-    app.run(host='0.0.0.0', port=5000, debug=True)
-    
-
-
+if __name__ == "__main__":
+    # Start the Flask application
+    threading.Thread(target=run_scheduled_tasks).start()  # Start scheduled tasks in a separate thread
+    app.run(host='0.0.0.0', port=5000, debug=True, threaded=True)
 

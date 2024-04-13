@@ -6,4 +6,4 @@ joblib
 scikit-learn
 boto3
 h5py==3.10.0
-python-dotenv
+schedule

@@ -1,22 +1,39 @@
-# get_summary_sensor.py
-
 import pandas as pd
 import sqlite3
 from datetime import datetime, timedelta
-import numpy as np
 
 #----# Newly added for using s3
 
 import boto3
+import json
 from io import StringIO
 import os
-from dotenv import load_dotenv
 
-load_dotenv()
+def get_aws_secret(secret_id, secret_name, region='us-west-2'):  
+    # initialize secret client
+    session = boto3.session.Session()
+    secret_client = session.client('secretsmanager',
+                                   region_name = region)
+
+    # get the secret data
+    response = secret_client.get_secret_value(
+    SecretId=secret_id
+    )
+
+    # store secret as JSON
+    secret_value = response['SecretString']
+    
+    # parse the secret JSON
+    secret_json = json.loads(secret_value)
+    
+    # extract the secret
+    return secret_json.get(secret_name)
 
 def initialize_s3_client():
-    aws_access_key_id = os.getenv("AWS_ACCESS_KEY_ID")
-    aws_secret_access_key = os.getenv("AWS_SECRET_ACCESS_KEY")
+
+    # get the secrets from environment variables that are passed during runtime
+    aws_access_key_id = os.environ.get("AWS_ACCESS_KEY_ID")
+    aws_secret_access_key = os.environ.get("AWS_SECRET_ACCESS_KEY")
 
     if aws_access_key_id and aws_secret_access_key:
         return boto3.client('s3', aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_secret_access_key)
@@ -38,8 +55,9 @@ def create_database_from_csv(csv_data, db_filename):
 
 #----# End of new stuff
 
-def return_table(begin_date, end_date,red,orange,green,lightBlue,salt,web,dav,r0,r1,r2,o0,o1,o2,b0,b1,b2,g0,g1,g2): 
-    
+def return_table(begin_date, end_date,red,orange,green,lightBlue,salt,web,dav,r0,r1,r2,o0,o1,o2,b0,b1,b2,g0,g1,g2):
+
+
     # Convert strings to datetime objects
     begin_date_obj = datetime.strptime(begin_date, "%Y-%m-%d")
     end_date_obj = datetime.strptime(end_date, "%Y-%m-%d")
@@ -49,25 +67,13 @@ def return_table(begin_date, end_date,red,orange,green,lightBlue,salt,web,dav,r0
         # Move end_date forward by one day
         end_date_obj += timedelta(days=1)
 
-        # Convert back to string if needed
+        # Convert back to string
         end_date = end_date_obj.strftime("%Y-%m-%d")
 
-#----# More new stuff for S3
-        
-    # Download the CSV file from S3
-    bucket_name = 'ai4aq'
-    file_key = 'data/slc_daily_pm2.5_pm10_2016_present.csv'
-    csv_data = download_csv_from_s3(bucket_name, file_key)
-    #print(f"csv_data after download from S3: {csv_data}")
-
-    # Create the SQLite DB from CSV
-    db_filename = 'flask_app/db/sensors_readings_2016_present.db'
-    create_database_from_csv(csv_data, db_filename)
-    
-#----# End of new stuff
+    db_filename = './flask_app/db/sensors_readings_2016_present.db'
     
     # Set up sqlite
-    connection = sqlite3.connect(db_filename) # Another S3 modification to use variable
+    connection = sqlite3.connect(db_filename)
     
     # Assemble Query
     sql_query = """
@@ -125,29 +131,13 @@ def return_table(begin_date, end_date,red,orange,green,lightBlue,salt,web,dav,r0
 
     # Step 3: Calculate Averages
     averages = sums.copy()
-    #averages['cat_avg_pm2'] = np.nan_to_num(round(sums['avg_pm2'] / counts['count']).astype('int'))
-    #averages['cat_avg_pm10'] = np.nan_to_num(round(sums['avg_pm10'] / counts['count']).astype('int'))
-
-
-
-
-    average_pm2 = sums['avg_pm2'] / counts['count']
-    average_pm2_valid = np.where(np.isfinite(average_pm2), average_pm2, 0)
-    averages['cat_avg_pm2'] = np.round(average_pm2_valid).astype('int')
-
-    average_pm10 = sums['avg_pm10'] / counts['count']
-    average_pm10_valid = np.where(np.isfinite(average_pm10), average_pm10, 0)
-    averages['cat_avg_pm10'] = np.round(average_pm10_valid).astype('int')
-
-
-
-
-    
+    averages['cat_avg_pm2'] = round(sums['avg_pm2'] / counts['count']).astype('int')
+    averages['cat_avg_pm10'] = round(sums['avg_pm10'] / counts['count']).astype('int')
 
     averages = averages[['category', 'cat_avg_pm2', 'cat_avg_pm10']]
     
     # Join
-
+    
     df['avg_pm2'] = round(df['avg_pm2']).astype('int')
     df['avg_pm10'] = round(df['avg_pm10']).astype('int')
 
@@ -172,6 +162,7 @@ def return_table(begin_date, end_date,red,orange,green,lightBlue,salt,web,dav,r0
     
 def return_county(begin_date, end_date,red,orange,green,lightBlue,salt,web,dav,s0,s1,s2,w0,w1,w2,d0,d1,d2):
 
+
     # Convert strings to datetime objects
     begin_date_obj = datetime.strptime(begin_date, "%Y-%m-%d")
     end_date_obj = datetime.strptime(end_date, "%Y-%m-%d")
@@ -181,11 +172,13 @@ def return_county(begin_date, end_date,red,orange,green,lightBlue,salt,web,dav,s
         # Move end_date forward by one day
         end_date_obj += timedelta(days=1)
 
-        # Convert back to string if needed
+        # Convert back to string
         end_date = end_date_obj.strftime("%Y-%m-%d")
 
+    db_filename = './flask_app/db/sensors_readings_2016_present.db'
+
     # Set up sqlite
-    connection = sqlite3.connect('flask_app/db/sensors_readings_2016_present.db')
+    connection = sqlite3.connect(db_filename)
     
     # Assemble Query
     sql_query = """
@@ -269,19 +262,136 @@ def return_county(begin_date, end_date,red,orange,green,lightBlue,salt,web,dav,s
     connection.close()
     return df
     
+
 # This will be for linear graph data
-def sensor_linear(begin_date,end_date, the_sensor):
+def sensor_linear(begin_date,end_date,red,orange,green,lightBlue,salt,web,dav):
+
+    # Convert strings to datetime objects
+    begin_date_obj = datetime.strptime(begin_date, "%Y-%m-%d")
+    end_date_obj = datetime.strptime(end_date, "%Y-%m-%d")
+
+    # Check if dates are the same
+    if begin_date_obj == end_date_obj:
+        # Move end_date forward by one day
+        begin_date_obj += timedelta(days=-92)
+
+        # Convert back to string
+        begin_date = begin_date_obj.strftime("%Y-%m-%d")
+
+    # Set up sqlite
+    connection = sqlite3.connect('./flask_app/static/data/sensors_readings_2016_present.db')
     
     # Assemble Query
     sql_query = """
-    SELECT date(date) as theDate, pm2
+    SELECT sensor_id,latitude, longitude, altitude, pm2, pm10, date(date) as date
     FROM sensors_readings
-    where (date(date) between ? and ?) and (sensor_id = ?)
-    order by date asc
+    WHERE date(date) BETWEEN ? AND ?
+    AND pm2 IS NOT NULL
+    AND pm10 IS NOT NULL
+
     """
     
-    #df = pd.read_sql_query(sql_query, connection, params=(begin_date, end_date))
-    df = pd.read_sql_query(sql_query, connection, params=(begin_date,end_date,the_sensor))
-    connection.close()
+    # Execute the query
+    df = pd.read_sql_query(sql_query, connection, params=(begin_date, end_date))
+    df = df.dropna()
+#     # Join with color categories
+    df_color = pd.read_csv('./flask_app/static/data/sensor_categories.csv')
+    df = pd.merge(df,df_color, on = 'sensor_id')
     
-    return df
+    selected_colors =[]
+    if red == True:
+        selected_colors.append('red')
+    if orange == True:
+        selected_colors.append('orange')
+    if green == True:
+        selected_colors.append('green')
+    if lightBlue == True:
+        selected_colors.append('blue')
+    
+    df = df.loc[df['category'].isin(selected_colors)].reset_index()
+    
+    df.drop(['category'], axis=1, inplace=True)
+    # Get category averages
+    # Step 1: Calculate Sums and Counts
+
+    selected_counties =[]
+    if salt == True:
+        selected_counties.append('Salt Lake County')
+    if web == True:
+        selected_counties.append('Weber County')
+    if dav == True:
+        selected_counties.append('Davis County')
+                 
+    
+    df = df.loc[df['county'].isin(selected_counties)]
+    df = pd.merge(df,df_color, on = ['sensor_id','county'])
+    df= df[['pm2','pm10','county','date']].groupby(['county','date']).mean()
+    
+    connection.close()
+    return df.reset_index()
+    
+
+    # This will be for linear graph data
+def sensor_linear_category(begin_date,end_date,red,orange,green,lightBlue,salt,web,dav):
+
+    # Convert strings to datetime objects
+    begin_date_obj = datetime.strptime(begin_date, "%Y-%m-%d")
+    end_date_obj = datetime.strptime(end_date, "%Y-%m-%d")
+
+    # Check if dates are the same
+    if begin_date_obj == end_date_obj:
+        # Move end_date forward by one day
+        begin_date_obj += timedelta(days=-92)
+        
+    begin_date = begin_date_obj.strftime("%Y-%m-%d")
+
+    db_filename = './flask_app/db/sensors_readings_2016_present.db'
+    
+    # Set up sqlite
+    connection = sqlite3.connect(db_filename)
+    
+    # Assemble Query
+    sql_query = """
+    SELECT sensor_id,latitude, longitude, altitude, pm2, pm10, date(date) as date
+    FROM sensors_readings
+    WHERE date(date) BETWEEN ? AND ?
+    AND pm2 IS NOT NULL
+    AND pm10 IS NOT NULL
+
+    """
+    
+    # Execute the query
+    df = pd.read_sql_query(sql_query, connection, params=(begin_date, end_date))
+    
+    # Join with color categories
+    df_color = pd.read_csv('./flask_app/static/data/sensor_categories.csv')
+    df = pd.merge(df,df_color, on = 'sensor_id')
+    
+    selected_counties =[]
+    if salt == True:
+        selected_counties.append('Salt Lake County')
+    if web == True:
+        selected_counties.append('Weber County')
+    if dav == True:
+        selected_counties.append('Davis County')
+    
+    df = df.loc[df['county'].isin(selected_counties)]
+    
+    df.drop(['county'], axis=1, inplace=True)
+
+    selected_colors =[]
+    if red == True:
+        selected_colors.append('red')
+    if orange == True:
+        selected_colors.append('orange')
+    if green == True:
+        selected_colors.append('green')
+    if lightBlue == True:
+        selected_colors.append('blue')
+    
+    df_income_colors = df.loc[df['category'].isin(selected_colors)]
+    df = pd.merge(df_income_colors,df_color, on = ['sensor_id','category'])
+    df= df[['pm2','pm10','category','date']].groupby(['category','date']).mean()
+    
+    connection.close()
+    return df.reset_index()
