@@ -122,6 +122,92 @@ function style(feature) {
     };
 }
 
+// Global variable to store patient count data
+let patientCounts = {};
+
+// Function to load patient counts from CSV
+function loadPatientCounts() {
+    return fetch('./static/data/patient_count.csv')
+        .then(response => response.text())
+        .then(csvText => {
+            // Convert CSV text to array of objects
+            const data = d3.csvParse(csvText);
+            // Use d3.nest to group data by PRVDR_NUM
+            patientCounts = d3.nest()
+                .key(d => d.PRVDR_NUM)
+                .entries(data)
+                .reduce((accumulator, currentValue) => {
+                    // The key will be the PRVDR_NUM and the value will be an array of entries
+                    accumulator[currentValue.key] = currentValue.values;
+                    return accumulator;
+                }, {});
+        });
+}
+
+
+function getPatientInfo(prvdrNum) {
+    // Accessing the entries with bracket notation
+    const entries = patientCounts[prvdrNum] || [];
+
+    if (entries.length === 0) {
+        return 'No data available';
+    }
+
+    // Filter entries for the years 2020, 2021, and 2022
+    const filteredEntries = entries.filter(entry =>
+        entry.claim_year === "2020" || entry.claim_year === "2021" || entry.claim_year === "2022"
+    );
+
+    // Summarize patient counts by year and diagnosis
+    var nestedData = d3.nest()
+        .key(function(d) { return d.claim_year; })
+        .key(function(d) { return d.related_diagnosis; })
+        .rollup(function(leaves) { return d3.sum(leaves, d => parseInt(d.patient_count, 10)); })
+        .entries(filteredEntries);
+
+    // Create the table
+    let infoHtml = '<table class="patient-data-table">';
+    infoHtml += '<thead><tr><th>Year</th><th>Diagnosis</th><th>Count</th></tr></thead>';
+    nestedData.forEach(function(yearGroup) {
+        yearGroup.values.forEach(function(diagGroup) {
+            infoHtml += `<tr><td>${yearGroup.key}</td><td>${diagGroup.key}</td><td>${diagGroup.value}</td></tr>`;
+        });
+    });
+    infoHtml += '</table>';
+
+    return infoHtml;
+}
+
+
+function getStyledInfoHtml(censusData, patientInfo) {
+    return `
+        <div class="sidebar-section">
+            <h2><b>US CENSUS INCOME DATA</b></h2>
+            <p>
+                This service identifies U.S. Census Block Groups by % of households that earn less than 80 percent of the Area Median Income (AMI).
+            </p>
+            <div class="sidebar-data">
+                <b>Census Tract:</b> ${censusData.Tract}<br>
+                <b>Low/Mod Percentage:</b> ${(100 * censusData.Lowmod_pct).toFixed(2)}%<br>
+
+            </div>
+            <hr class="sidebar-divider">
+            <h2><b>AQ RELATED HEALTH DATA</b></h2>
+            <b>Nearest Facility:</b> ${censusData.FAC_NAME}<br>
+            <div class="patient-info">
+                ${patientInfo}
+            </div>
+            <p class="health-data-note">
+                *asthma, acute bronchitis, COPD, dyspnea*
+                
+            </p>
+            <p class="disclaimer">
+                Health data provided is from Medicare, representing a five percent sample. Data is for informational purposes only and does not indicate causality.
+            </p>
+        </div>
+    `;
+}
+
 function highlightFeature(e) {
     var layer = e.target;
 
@@ -136,14 +222,16 @@ function highlightFeature(e) {
         layer.bringToFront();
     }
 
-    // Update info panel with properties
     var properties = layer.feature.properties;
-    document.getElementById('info').innerHTML = '<b>Census Tract:</b> ' + properties.Tract + '<br><b>Low Income:</b> ' + properties.Low + '<br><b>Low/Moderate Income:</b> ' + properties.Lowmod + '<br><b>Low/Mod Percentage:</b> ' + properties.Lowmod_pct;
+    var patientInfo = getPatientInfo(properties.PRVDR_NUM);
+
+    // Only set the innerHTML once with the styled content
+    document.getElementById('info').innerHTML = getStyledInfoHtml(properties, patientInfo);
 }
 
 function resetHighlight(e) {
     geojsonLayer.resetStyle(e.target);
-    document.getElementById('info').innerHTML = '<b>Census Tract:</b> ' + '<br><b>Low Income:</b> ' + '<br><b>Low/Moderate Income:</b> ' +  '<br><b>Low/Mod Percentage:</b> '
+    document.getElementById('info').innerHTML = 'Hover over a Tract'
 }
 
 function onEachFeature(feature, layer) {
@@ -154,18 +242,23 @@ function onEachFeature(feature, layer) {
 }
 
 function loadGeoJSONLayer(map) {
-    fetch('/static/data/converted_geojson_data.geojson')
-        .then(response => response.json())
-        .then(data => {
-            geojsonLayer = L.geoJson(data, {
-                style: style,
-                onEachFeature: function(feature, layer) {
-                    // Now pass `map` as the third argument
-                    onEachFeature(feature, layer, map);
-                }
-            }).addTo(map);
-        });
+    loadPatientCounts().then(() => {
+        fetch('./static/data/converted_geojson_data.geojson')
+            .then(response => response.json())
+            .then(data => {
+                geojsonLayer = L.geoJson(data, {
+                    style: style,
+                    onEachFeature: function(feature, layer) {
+                        onEachFeature(feature, layer, map);
+                    }
+                }).addTo(map);
+            });
+    }).catch(error => {
+        console.error('An error occurred while loading patient counts:', error);
+    });
 }
+
+
 
 
 //-------------------END INITIALIZE MAP --------------------------------------------

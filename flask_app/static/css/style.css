@@ -157,7 +157,7 @@ h1, h2, h3, h4, h5, h6 {
     display: flex;
     width: 99%;
     align-items: center; /* This ensure vertical alignment */
-    z-index: 1000; /* Ensure it's above the map */
+    z-index: 1200; /* Ensure it's above the map */
 }
 
 #radio_select{
@@ -189,7 +189,7 @@ h1, h2, h3, h4, h5, h6 {
     width: 100%; /* Full width of the viewport */
     height: 130px; /* Height of the bar */
     background-color: #333; /* Color of the bar */
-    z-index: 999;
+    z-index: 1150;
 }
 
 
@@ -216,9 +216,9 @@ h1, h2, h3, h4, h5, h6 {
     font-size: 16px; /* Text size */
     color: #333; /* Text color */
     text-align: left; /* Center the text */
-    height: 400px;
+    height: 218px;
     position: relative; /* Position it absolutely within a relative container */
-    bottom: -700px; /* Distance from the top of the container */
+    bottom: -95px; /* Distance from the top of the container */
     left: 00px;; /* Distance from the right of the container */
     z-index: 1000; /* Ensure it's above other elements */
 }
@@ -230,9 +230,9 @@ h1, h2, h3, h4, h5, h6 {
     height: 100%; /* Full height */
     position: fixed;
     top: 0; /* Align to the top */
-    left: -3000px; /* Initially hide the sidebar off-screen to the left */
+    left: -1000px; /* Initially hide the sidebar off-screen to the left */
     background-color: white;
-    z-index: 900;
+    z-index: 990;
     transition: left 0.8s; /* Smooth transition for sliding effect */
 }
 
@@ -318,7 +318,7 @@ h1, h2, h3, h4, h5, h6 {
 #colorToggle {
     position: fixed;
     top: 36px;
-    left: 194px;
+    left: 192px;
     display: flex;
     height: 42px;
     width: 70px;
@@ -494,6 +494,62 @@ transform: translateY(0%); /* Moves into view */
     padding: 28px 30px;
     border-radius: 5px;
 }
+
+.sidebar-section {
+    font-family: Arial, sans-serif;
+    color: #333;
+}
+
+.sidebar-section h2 {
+    font-size: 18px;
+    color: #444;
+    margin-bottom: 8px;
+}
+
+.sidebar-data {
+    font-size: 14px;
+    margin-bottom: 12px;
+}
+
+.patient-info {
+    font-size: 14px;
+    background-color: #f8f8f8;
+    padding: 10px;
+    border-radius: 4px;
+    margin-bottom: 12px;
+}
+
+.sidebar-divider {
+    border-top: 1px solid #ccc;
+    margin: 16px 0;
+}
+
+.health-data-note {
+    font-size: 12px;
+    margin-bottom: 4px;
+}
+
+.disclaimer {
+    font-size: 12px;
+    color: #666;
+    margin-top: 16px;
+}
+
+.patient-data-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.patient-data-table th,
+.patient-data-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+.patient-data-table th {
+    background-color: #f2f2f2;
+    color: #333;
 }
 
 /*end added*/
