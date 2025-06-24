@@ -1,5 +1,4 @@
 # AI4AQ
-Modeling the relationship between outdoor and indoor air quality.
 
 ## Problem and Motivation
 The Salt Lake Valley experiences some of the worst air quality in the United States. In the winter, inversions trap polluted air for days at a time. 600,000 residents are especially threatened by the unhealthy air quality [source](https://www.iqair.com/us/usa/utah/salt-lake-city). Experts estimate that the poor air quality decreases the median life expectancy by up to 3.6 years [source](https://www.mdpi.com/2073-4433/11/11/1238).
