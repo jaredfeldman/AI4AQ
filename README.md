@@ -27,6 +27,16 @@ We fill the data gap by using AI to generate PM 2.5 and PM 10 estimates for area
 
 Our work is accessible. It can be used by Salt Lake valley residents to make daily decisions and long-term decisions, like where to move to. It can also be used by policymakers to uncover disparaties and protect their constituents. 
 
+## Screenshots
+![image](https://github.com/user-attachments/assets/196949fe-5cf3-48ed-808e-e75f9bd7f30d)
+
+![image](https://github.com/user-attachments/assets/b1c100a1-ac3c-42f3-8508-420b0090e8c9)
+
+## Pipeline Diagrams
+![image](https://github.com/user-attachments/assets/ba9b5428-dc0d-415a-aded-35f0ee3de0f1)
+
+![image](https://github.com/user-attachments/assets/c845df17-4ec1-442e-8619-3df4594e6dc6)
+
 ## Project Organization
 
     ├── LICENSE
